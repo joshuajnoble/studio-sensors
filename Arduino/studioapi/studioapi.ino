@@ -3,6 +3,8 @@
 #include <Adafruit_CC3000.h>
 #include <SPI.h>
 
+const char ID = '1';
+
 ////////////////////////////////////////////////////
 // mic
 ////////////////////////////////////////////////////
@@ -43,7 +45,7 @@ const uint8_t SERVER_IP[] = {192, 168, 1, 105};    // Logging server IP address.
 const uint8_t SERVER_PORT = 3000;                // Logging server listening port.
 Adafruit_CC3000 cc3000 = Adafruit_CC3000(ADAFRUIT_CC3000_CS, ADAFRUIT_CC3000_IRQ, ADAFRUIT_CC3000_VBAT);
 uint32_t ip;
-prog_char URI[] PROGMEM = "http://162.17.13.11:3000";
+prog_char URI[] PROGMEM = "http://10.118.73.12";
 uint8_t loc;
 ////////////////////////////////////////////////////
 
@@ -53,7 +55,7 @@ we're looking for an IP that sends a few things:
 
 light intensity, light, PIR, sound, temp, humid
 
-?l=122li=12&pir=true&sound=16&t=18&h=20
+?id=idl=122li=12&pir=true&sound=16&t=18&h=20
 
 */
 
@@ -100,7 +102,7 @@ void setup()
   
   pinMode(2, INPUT);            // Set pin 2 to input
   digitalWrite(2, HIGH);        // Turn on pullup resistor
-  attachInterrupt(2, count_inc, RISING);
+  attachInterrupt(1, count_inc, RISING);
   
   // Store the IP of the server.
   ip = cc3000.IP2U32(SERVER_IP[0], SERVER_IP[1], SERVER_IP[2], SERVER_IP[3]);
@@ -154,7 +156,13 @@ void loop()
   
   memset(&values[0], 0, 122);
   
-  loc = 0;
+  // set our ID
+  values[0] = 'i';
+  values[1] = '=';
+  values[2] = ID;
+  values[3] = '&';
+  
+  loc = 4;
   
   values[loc] = 'l';
   loc++;
@@ -163,8 +171,8 @@ void loop()
   
   itoa( hz, &values[loc], 16 );
   
-  if(hz < 16 ) { loc+=1; }
-  else if(hz < 255 ) { loc+=2; }
+  if(hz < 15 ) { loc+=1; }
+  else if(hz < 254 ) { loc+=2; }
   else { loc+=3; }
   
   values[loc] = '&';
