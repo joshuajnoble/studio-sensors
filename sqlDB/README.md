@@ -12,6 +12,9 @@ Build and run the docker image
 * `docker run -d -i -v /var/docker/postgresql/data:/data -p 5432:5432 -t postgresql`
 
 Bash into DB:
+* `sudo docker ps`
+* `note: Find the line which contains the docker image for postgresql and get the container name`
+* `note: In the following line, replace ##container_name## with that name`
 * `sudo docker run -rm -i -link ##container_name##:pg -v /var/docker/postgresql/data:/data -t postgresql bash`
 * `psql -h $PG_PORT_5432_TCP_ADDR -p $PG_PORT_5432_TCP_PORT -d docker -U docker --password`
 * `note: the password is docker`
