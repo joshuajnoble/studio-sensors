@@ -41,11 +41,11 @@ unsigned long hz;
 #define WLAN_SSID              "frogwirelessext"
 #define WLAN_PASS              "friedolin"
 #define WLAN_SECURITY          WLAN_SEC_WPA2
-const uint8_t SERVER_IP[] = {192, 168, 1, 105};    // Logging server IP address.  Note that this
+const uint8_t SERVER_IP[] = {162, 242, 237, 33};    // Logging server IP address.  Note that this
 const uint8_t SERVER_PORT = 3000;                // Logging server listening port.
 Adafruit_CC3000 cc3000 = Adafruit_CC3000(ADAFRUIT_CC3000_CS, ADAFRUIT_CC3000_IRQ, ADAFRUIT_CC3000_VBAT);
 uint32_t ip;
-prog_char URI[] PROGMEM = "http://10.118.73.12";
+prog_char URI[] PROGMEM = "http://162.242.237.33";
 uint8_t loc;
 ////////////////////////////////////////////////////
 
@@ -104,15 +104,22 @@ void setup()
   digitalWrite(2, HIGH);        // Turn on pullup resistor
   attachInterrupt(1, count_inc, RISING);
   
+//  while (ip == 0) {
+//    if (! cc3000.getHostByName("162.242.237.33", &ip)) {
+//      Serial.println(F("Couldn't resolve!"));
+//    }
+//    delay(500);
+//  }
+  
   // Store the IP of the server.
-  ip = cc3000.IP2U32(SERVER_IP[0], SERVER_IP[1], SERVER_IP[2], SERVER_IP[3]);
+  ip = cc3000.IP2U32(162, 242, 237, 33);
 }
 
 void loop()
 {
 
   bool doSend = false;
-  if(millis() - lastSend > 1000) 
+  if(millis() - lastSend > 5000) 
   {
     doSend = true;
     lastSend = millis();
@@ -143,9 +150,6 @@ void loop()
   // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
   uint8_t h = dht.readHumidity();
   uint8_t t = dht.readTemperature();
-
-  //Adafruit_CC3000_Client server = cc3000.connectTCP(ip, SERVER_PORT);
-  
   
   //////////////////////////////////////////////////////////////////
   // q - why does this look like this?
@@ -157,12 +161,16 @@ void loop()
   memset(&values[0], 0, 122);
   
   // set our ID
-  values[0] = 'i';
-  values[1] = '=';
-  values[2] = ID;
-  values[3] = '&';
   
-  loc = 4;
+  values[0] = ' ';
+  values[1] = '/';
+  values[2] = '?';
+  values[3] = 'i';
+  values[4] = '=';
+  values[5] = ID;
+  values[6] = '&';
+  
+  loc = 7;
   
   values[loc] = 'l';
   loc++;
@@ -177,7 +185,7 @@ void loop()
   
   values[loc] = '&';
   loc++;
-  values[loc] = 'p';
+  values[loc] = 'm';
   loc++;
   values[loc] = '=';
   loc++;
@@ -225,13 +233,22 @@ void loop()
   if(h < 16 ) { loc+=1; }
   else { loc+=2; }
   
-  //if (server.connected()) {
-  //  server.println(&values[0]);
-  //}
+  Adafruit_CC3000_Client server = cc3000.connectTCP(ip, 3000);
+  
+  if (server.connected()) {
+    server.fastrprint(F("GET"));
+    //server.fastrprint(F(" /index.html?i=1&m=1&t=1&h=2&s=2"));
+    server.fastrprint(values);
+    server.fastrprint(F(" HTTP/1.1\r\n"));
+    server.fastrprint(F("\r\n"));
+    server.fastrprint(F("Host: "));
+    server.println();
+    //Serial.println(values);
+  }
   
   
-  //server.close();
-  Serial.println(values);
+  server.close();
+  //cc3000.disconnect();
 
   // pause for 1 second
   //delay(1000);
