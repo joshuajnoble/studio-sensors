@@ -65,40 +65,49 @@ uint8_t pirVal;
 long lastSend;
 
 #define PIR_PIN 6
-
+//#define USING_SERIAL
 
 void setup()
 {
   
+  #ifdef USING_SERIAL
   Serial.begin(115200);
   while(!Serial);
+  #endif
   
   //  Configure LED pin as output
   pinMode(PIR_PIN, INPUT);
   dht.begin();
   
+  #ifdef USING_SERIAL
   Serial.println( " dht begin "); 
+  #endif
   
   // wifi
   if (!cc3000.begin()) {
     while(1);
   }
-  
+  #ifdef USING_SERIAL
   Serial.println(" cc3300 begin " );
+  #endif
 
   // Connect to AP.
   if (!cc3000.connectToAP(WLAN_SSID, WLAN_PASS, WLAN_SECURITY)) {
     while(1);
   }
   
+  #ifdef USING_SERIAL
   Serial.println(" connected " );
+  #endif
   
   // Wait for DHCP to be complete
   while (!cc3000.checkDHCP()) {
     delay(100);
   }
   
+  #ifdef USING_SERIAL
   Serial.println(" connected DHCP " );
+  #endif
   
   pinMode(2, INPUT);            // Set pin 2 to input
   digitalWrite(2, HIGH);        // Turn on pullup resistor
@@ -119,7 +128,7 @@ void loop()
 {
 
   bool doSend = false;
-  if(millis() - lastSend > 5000) 
+  if(millis() - lastSend > 10000) 
   {
     doSend = true;
     lastSend = millis();
@@ -243,7 +252,6 @@ void loop()
     server.fastrprint(F("\r\n"));
     server.fastrprint(F("Host: "));
     server.println();
-    //Serial.println(values);
   }
   
   

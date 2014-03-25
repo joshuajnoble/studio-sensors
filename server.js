@@ -22,6 +22,17 @@ client.connect(function(err) {
   if(err) {
     return console.error('could not connect to postgres', err);
   }
+  else {
+    var q = "set session time zone '-07';";
+    client.query(q,  function(err, result) {
+        if(err){
+          console.log(" error " + err);
+        }
+        if(result) {
+          console.log("timezone set ");
+        }
+      });
+  }
 });
 
 app.listen(3000);
@@ -42,7 +53,9 @@ function handler (req, res) {
     if(q && q.i)
     {
       console.log(q);
-      var query = "INSERT INTO readings (sensor_id, time, light, sound, temp, movement, humidity, brightness) VALUES (" + parseInt(q.i,16) + ",current_timestamp," + parseInt(q.l,16) + "," + parseInt(q.s,16) + "," + parseInt(q.t,16) + "," + parseInt(q.m,16) + "," + parseInt(q.h,16) +",0);";
+      var query = "INSERT INTO readings (sensor_id, time, light, sound, temp, movement, humidity, brightness) VALUES (" + 
+        parseInt(q.i,16) + ",current_timestamp," + parseInt(q.l,16) + "," + parseInt(q.s,16) + "," + parseInt(q.t,16) + "," + 
+        parseInt(q.m,16) + "," + parseInt(q.h,16) +",0);";
 
      console.log(query);
      client.query(query,  function(err, result) {
@@ -59,7 +72,48 @@ function handler (req, res) {
       return res.end();
     }
   }
-  else {
+  else if( uri == "/view")
+  {
+    var q = querystring.parse(url.parse(req.url).query);
+    if(q && q.begintime && q.endtime) 
+    {
+      var query = "select * from readings where time BETWEEN to_timestamp('"+q.begindate+ " " + q.begintime +"', 'DDMMYYYY HH24MI') AND to_timestamp('"+q.enddate+" " +q.endtime + "', 'DDMMYYYY HH24MI')";
+      client.query(query,  function(err, result) {
+        if(err){
+          console.log(" error " + err);
+          res.writeHead(200, {'Content-Type': 'text/plain'});
+          res.write(" error " + err);
+          return res.end();
+        }
+        if(result) {
+          var json = JSON.stringify(result.rows);
+          res.writeHead(200, {'content-type':'application/json', 'content-length':json.length}); 
+          res.end(json); 
+        }
+      });
+    }
+    if(q && q.zone) 
+    {
+      var query = "select * from readings where sensor_id = "+q.zone;
+      client.query(query,  function(err, result) {
+        if(err){
+          console.log(" error " + err);
+          res.writeHead(200, {'Content-Type': 'text/plain'});
+          res.write(" error " + err);
+          return res.end();
+        }
+        if(result) {
+          var json = JSON.stringify(result.rows);
+          res.writeHead(200, {'content-type':'application/json', 'content-length':json.length}); 
+          res.end(json);
+        }
+      });
+    }
+  }
+  else
+  {
+
+    // post the data
 
     var filename = path.join(process.cwd(), uri);
 
@@ -78,8 +132,5 @@ function handler (req, res) {
         fileStream.pipe(res);
 
     }); //end path.exists
+  }
 }
- 
-}
-
-
