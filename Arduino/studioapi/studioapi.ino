@@ -3,7 +3,10 @@
 #include <Adafruit_CC3000.h>
 #include <SPI.h>
 
-const char ID = '1';
+//////// what ID are we?
+const char ID = '2';
+
+const int SEND_INTERVAL = 30000; // 30s
 
 ////////////////////////////////////////////////////
 // mic
@@ -53,9 +56,13 @@ uint8_t loc;
 
 we're looking for an IP that sends a few things:
 
-light intensity, light, PIR, sound, temp, humid
+light = l
+PIR = m
+sound = s
+temp = t
+humidity = h
 
-?id=idl=122li=12&pir=true&sound=16&t=18&h=20
+?i=1&l=122&m=1&s=16&t=18&h=30
 
 */
 
@@ -65,7 +72,7 @@ uint8_t pirVal;
 long lastSend;
 
 #define PIR_PIN 6
-//#define USING_SERIAL
+#define USING_SERIAL
 
 void setup()
 {
@@ -128,14 +135,14 @@ void loop()
 {
 
   bool doSend = false;
-  if(millis() - lastSend > 10000) 
+  if(millis() - lastSend > SEND_INTERVAL) 
   {
     doSend = true;
     lastSend = millis();
   }
   
   uint8_t tp = digitalRead(PIR_PIN);
-  if(tp == LOW) {
+  if(tp == HIGH) {
     pirVal = tp;
   }
   
@@ -246,7 +253,6 @@ void loop()
   
   if (server.connected()) {
     server.fastrprint(F("GET"));
-    //server.fastrprint(F(" /index.html?i=1&m=1&t=1&h=2&s=2"));
     server.fastrprint(values);
     server.fastrprint(F(" HTTP/1.1\r\n"));
     server.fastrprint(F("\r\n"));
@@ -255,12 +261,7 @@ void loop()
   }
   
   
-  server.close();
-  //cc3000.disconnect();
-
-  // pause for 1 second
-  //delay(1000);
-  
+  server.close();  
   pirVal = HIGH;
   
 }

@@ -3,7 +3,7 @@
 =========================================================================================================================================
 ==========================================================================================================================================
 
-STUDIO API
+seattle studio sensor scheme: SS|SS
 
 ==========================================================================================================================================
 =========================================================================================================================================
@@ -24,17 +24,17 @@ Here's what it looks like:
 
 Whoa. That's JSON! That's right, JSON! Holy Shit!
 
-The studio API sensors log all their data up there to my server every 15 seconds. 
+The frog studio sensors log all their data up there to my server every 15 seconds. 
 
 Ok, so we have a few things in there:
 
 sensor_id: what sensor is it?
 time: that's a timestamp (ignore the Z, it just means it's using the current timezone, which, yeah, it is)
 sound: scale from 50 - 400 (afaict)
-movement: has anything moved in that zone in the last 15 seconds?
+movement: has anything moved in that zone in the last 30 seconds?
 humidity: what's the relative humidity (percent)
 temperature: Celsius
-light: light frequency in values from 100-500 with the relative color temperature of the light sensor
+light: light frequency in values from 100-2000 with the relative color temperature of the light sensor
 brightness: not being used right now
 
 The arduino just logs its data using a URL like:
