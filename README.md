@@ -44,3 +44,21 @@ http://162.242.237.33:3000/?i=1&l=343&s=232&t=22&h=33&m=0
 we're trying to keep the URL as short and simple as possible so that we can save space on the Arduino because it hardly has any memory.
 
 Everything is in git but at present or until someone can figure out how the local server stuff is supposed to work, this badboy is staying simple and living on my server.
+
+===============================================
+SERVER INFO
+===============================================
+
+I have my server set up to use upstart to start up our node application, it's logging to :"/etc/init/studioapi.conf" at the moment so you can see what's going on with it.
+
+===============================================
+DB INFO
+===============================================
+
+Creating the DB is pretty simple:
+
+create database sensordata;
+
+create table readings ( id serial, sensor id int not null, time timestamp with time zone not null, light int not null, sound int not null, movement int not null, temp int not null, humidity int not null, brightness int not null);
+
+
