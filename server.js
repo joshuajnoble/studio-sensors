@@ -111,7 +111,7 @@ function handler (req, res) {
     }
     if(q && q.recent)
     {
-	var query = "select * from readings where sensor_id = "+q.recent+" and time > (now() - interval '1 hour');"
+	      var query = "select * from readings where sensor_id = "+q.recent+" and time > (now() - interval '1 hour');"
         client.query(query,  function(err, result) {
         if(err){
           console.log(" error " + err);
@@ -126,6 +126,101 @@ function handler (req, res) {
         }
       });
     }
+    else if(q && q.now)
+    {
+	      var query = "select * from readings where sensor_id = "+q.now+" and time > (now() - interval '2 minute');"
+        client.query(query,  function(err, result) {
+        if(err){
+          console.log(" error " + err);
+          res.writeHead(200, {'Content-Type': 'text/plain'});
+          res.write(" error " + err);
+          return res.end();
+        }
+        if(result) {
+          var json = JSON.stringify(result.rows);
+          res.writeHead(200, {'content-type':'application/json', 'content-length':json.length});
+          res.end(json);
+        }
+      });
+    } 
+    else if(q && q.last)
+    {
+        var query = "SELECT * from readings where sensor_id="+q.last+" order by time desc limit 1;";
+        client.query(query,  function(err, result) {
+        if(err){
+          console.log(" error " + err);
+          res.writeHead(200, {'Content-Type': 'text/plain'});
+          res.write(" error " + err);
+          return res.end();
+        }
+        if(result) {
+          var json = JSON.stringify(result.rows);
+          res.writeHead(200, {'content-type':'application/json', 'content-length':json.length});
+          res.end(json);
+        }
+      });
+    }
+  }
+  else if( uri == "/test")
+  {
+    var q = querystring.parse(url.parse(req.url).query);
+    if(q && q.insert)
+    {
+      var query = "INSERT INTO testing (time) VALUES (current_timestamp);";
+
+       console.log(query);
+       client.query(query,  function(err, result) {
+          if(err){
+            return console.log(" error " + err);
+          }
+          if(result) {
+              res.writeHead(200, {'Content-Type': 'text/plain'});
+              res.write('done');
+              return res.end();
+          }
+        });
+     }
+     if(q && q.all)
+      {
+        var query = "SELECT * from testing;";
+
+         console.log(query);
+         client.query(query,  function(err, result) {
+            if(err){
+              console.log(" error " + err);
+              res.writeHead(200, {'Content-Type': 'text/plain'});
+              res.write(" error " + err);
+              return res.end();
+            }
+            if(result) {
+              var json = JSON.stringify(result.rows);
+              res.writeHead(200, {'content-type':'application/json', 'content-length':json.length});
+              res.end(json);
+            }
+
+          });
+       }
+       if(q && q.last)
+      {
+        var query = "SELECT * from testing order by time desc limit 1;";
+
+         console.log(query);
+         client.query(query,  function(err, result) {
+            if(err){
+              console.log(" error " + err);
+              res.writeHead(200, {'Content-Type': 'text/plain'});
+              res.write(" error " + err);
+              return res.end();
+            }
+            if(result) {
+              var json = JSON.stringify(result.rows);
+              res.writeHead(200, {'content-type':'application/json', 'content-length':json.length});
+              res.end(json);
+            }
+
+          });
+       }
+
   }
   else
   {
