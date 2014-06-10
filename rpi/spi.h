@@ -5,7 +5,7 @@
 #include <linux/spi/spidev.h>
 #include <stdio.h>
 #include <errno.h>
-#include <stlib.h>
+#include <stdlib.h>
 
 
 struct spiConfig {
