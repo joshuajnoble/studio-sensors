@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
@@ -7,18 +6,20 @@
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
-
+#include <sstream>
 #include <arpa/inet.h>
-
+#include "spi.h" 
 #define PORT "3000" // the port client will be connecting to 
 
 #define MAXDATASIZE 100 // max number of bytes we can get at once 
-spiDevice *spiDevice;
+spiConfig *spiConfig;
+
+using namespace std;
 
 struct atmosphereData {
   char temp[2];
   char humidity[2];
-}
+};
 
 // get sockaddr, IPv4 or IPv6:
 void *get_in_addr(struct sockaddr *sa)
@@ -30,7 +31,7 @@ void *get_in_addr(struct sockaddr *sa)
     return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
-int connectAndSend(int argc, char *argv[])
+int connectAndSend( string hostname )
 {
     int sockfd, numbytes;  
     char buf[MAXDATASIZE];
@@ -42,7 +43,7 @@ int connectAndSend(int argc, char *argv[])
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
 
-    if ((rv = getaddrinfo(hostname, PORT, &hints, &servinfo)) != 0) {
+    if ((rv = getaddrinfo(hostname.c_str(), PORT, &hints, &servinfo)) != 0) {
         fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
         return 1;
     }
@@ -83,11 +84,6 @@ int connectAndSend(int argc, char *argv[])
     printf("client: received '%s'\n",buf);
 
     close(sockfd);
-}
-
-int readVolume( int pin )
-{
-  spiWriteRead( )
 }
 
 
@@ -166,17 +162,17 @@ int readDHT(int pin, atmosphereData* aData) {
   return 0;
 }
 
-void main()
+int main()
 {
-  spiDevice = malloc(sizeof(spiDevice));
-  spiDevice->mode = SPI_MODE_0;
-  spiDevice->bitsPerWord = 8;
-  spiDevice->speed = 1000000;
-  spiDevice->spifd = -1;
+  spiConfig = (spiConfig*) malloc(sizeof(spiConfig));
+  spiConfig->mode = SPI_MODE_0;
+  spiConfig->bitsPerWord = 8;
+  spiConfig->speed = 1000000;
+  spiConfig->spifd = -1;
 
-  char adc08636 = "/dev/spidev0.0";
+  const char adc08636[] = "/dev/spidev0.0";
 
-  if(spiOpen(spiDevice, adc08636, sizeof(adc08636)) < 0) {
+  if(spiOpen(spiConfig, &adc08636[0], sizeof(adc08636))) < 0) {
     perror(" can't open spidev0.0");
   }
 
@@ -184,6 +180,7 @@ void main()
   unsigned char dataDump[255];
   unsigned char spiData[2];
   int soundValue;
+  int dhtPin = 4; // make this right!
 
   while()
   {
@@ -196,13 +193,23 @@ void main()
 
      */
 
+    stringstream ss;
+
     readDHT( dhtPin, &dhtData );
-    spiWriteRead( &spiDevice, )
+
+    ss << "t="<< dhtData.temp << "&";
+
+    ss << "h="<< dhtData.humidity << "&";
+    soundValue = spiWriteRead( spiConfig, &spiData[0], 2 );
+    
+    ss << "s="<< soundValue << "&";
     // we dont really care what we're sending b/c we're only reading
-    soundValue = connectAndSend( &spiData[0], 2 );
+
+    string hostname = "162.242.237.33";
+    connectAndSend( hostname );
     
 
   }
 
-
+  return 1;
 }

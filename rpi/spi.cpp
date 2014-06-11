@@ -1,3 +1,6 @@
+#include "spi.h"
+
+
 int spiOpen(spiConfig *spic, char *spiDevice, int length)
 {
 
