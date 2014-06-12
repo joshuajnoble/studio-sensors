@@ -8,11 +8,14 @@
 #include <sys/socket.h>
 #include <sstream>
 #include <arpa/inet.h>
-#include "spi.h" 
+#include "spi.h"
+#include "bcm2835.h"
 #define PORT "3000" // the port client will be connecting to 
 
 #define MAXDATASIZE 100 // max number of bytes we can get at once 
 spiConfig *spiConfig;
+
+#define LIGHT_PIN 15
 
 using namespace std;
 
@@ -182,6 +185,11 @@ int main()
   int soundValue;
   int dhtPin = 4; // make this right!
 
+  // Set RPI pin P1-15 to be an input
+  bcm2835_gpio_fsel(LIGHT_PIN, BCM2835_GPIO_FSEL_INPT);
+  // enable rising edge
+  bcm2835_gpio_ren(LIGHT_PIN);
+
   while()
   {
 
@@ -193,6 +201,14 @@ int main()
 
      */
 
+    // check for event
+    if (bcm2835_gpio_eds(LIGHT_PIN))
+    {
+      lightCount++;
+      // Now clear the eds flag by setting it to 1
+      bcm2835_gpio_set_eds(LIGHT_PIN);
+    }
+
     stringstream ss;
 
     readDHT( dhtPin, &dhtData );
@@ -201,10 +217,10 @@ int main()
 
     ss << "h="<< dhtData.humidity << "&";
     soundValue = spiWriteRead( spiConfig, &spiData[0], 2 );
-    
     ss << "s="<< soundValue << "&";
-    // we dont really care what we're sending b/c we're only reading
+    ss << "li=" << lightCount;
 
+    // we dont really care what we're sending b/c we're only reading
     string hostname = "162.242.237.33";
     connectAndSend( hostname );
     
