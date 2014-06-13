@@ -167,7 +167,6 @@ int readDHT(int pin, atmosphereData* aData) {
 
 int main()
 {
-  spiConfig = (spiConfig*) malloc(sizeof(spiConfig));
   spiConfig->mode = SPI_MODE_0;
   spiConfig->bitsPerWord = 8;
   spiConfig->speed = 1000000;

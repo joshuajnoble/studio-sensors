@@ -1,5 +1,5 @@
-#include <stdio.h>
-#include "spi.h"
+#include <iostream>
+#include "../spi.h"
 
 
 int main()
@@ -23,7 +23,7 @@ int main()
 	while()
 	{	
 		soundValue = spiWriteRead( spiConfig, &spiData[0], 2 );
-		delay(1000);
+		bcm2835_delay(1000);
 	}
 
 	return 1;

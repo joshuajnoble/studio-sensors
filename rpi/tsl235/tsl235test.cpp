@@ -1,6 +1,13 @@
-#include "bcm2835.h"
+
+// compiled for g++
+// 
+
+#include <iostream>
+#include <bcm2835.h>
 #include <time.h>
 
+int lightCount;
+const int LIGHT_PIN = 15;
 
 long int last_heartbeat;
 long int heartbeat_difference;
@@ -9,12 +16,14 @@ struct timespec gettime_now;
 int main()
 {
 
+	lightCount = 0;
+
 	// Set RPI pin P1-15 to be an input
 	bcm2835_gpio_fsel(LIGHT_PIN, BCM2835_GPIO_FSEL_INPT);
 	// enable rising edge
 	bcm2835_gpio_ren(LIGHT_PIN);
 
-	while()
+	while(true)
 	{
 	    // check for event
 	    if (bcm2835_gpio_eds(LIGHT_PIN))
