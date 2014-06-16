@@ -10,9 +10,12 @@
 #include <arpa/inet.h>
 #include <ctime>
 #include "spi.h"
-#include "bcm2835.h"
-#define PORT "3000" // the port client will be connecting to 
 
+extern "C" {
+   #include "bcm2835.h"
+}
+
+#define PORT "3000" // the port client will be connecting to 
 #define MAXDATASIZE 100 // max number of bytes we can get at once 
 spiConfig *spiConfig;
 
@@ -99,25 +102,22 @@ int connectAndSend( string hostname )
 }
 
 
-int readDHT(atmosphereData* aData) {
+int readDHT(atmosphereData* aData)
+{
   int counter = 0;
   int laststate = HIGH;
-  int j=0;
-
-  bcm2835_gpio_write(dhtPin, HIGH);
-  usleep(500000);  // 500 ms
-  bcm2835_gpio_write(dhtPin, LOW);
+  int j = 0;
+  bcm2835_gpio_write(DHT_PIN, HIGH);
+  usleep(500000);
+  bcm2835_gpio_write(DHT_PIN, LOW);
   usleep(20000);
-
-  bcm2835_gpio_fsel(dhtPin, BCM2835_GPIO_FSEL_INPT);
+  bcm2835_gpio_fsel(DHT_PIN, BCM2835_GPIO_FSEL_INPT);
 
   data[0] = data[1] = data[2] = data[3] = data[4] = 0;
 
   // wait for dhtPin to drop
   while(bcm2835_gpio_lev(dhtPin) != 0) 
   {
-    readDHT( 10, &dhtData );
-    std::cout << dhtData.temp << " " dhtData.humidity << std::endl;
     bcm2835_delay(1000);
   }
 
@@ -151,7 +151,9 @@ int main()
 
   // turn everything on
   if (!bcm2835_init())
-    return 1;
+  {
+	return 1;
+  }
 
   pirTriggered = false;
 
@@ -175,7 +177,6 @@ int main()
   unsigned char dataDump[255];
   unsigned char spiData[2];
   int soundValue;
-  int dhtPin = 4; // make this right!
 
   // Set RPI pin P1-15 to be an input
   bcm2835_gpio_fsel(LIGHT_PIN, BCM2835_GPIO_FSEL_INPT);
