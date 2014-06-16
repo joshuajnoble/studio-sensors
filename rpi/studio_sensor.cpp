@@ -11,9 +11,7 @@
 #include <ctime>
 #include "spi.h"
 
-extern "C" {
    #include "bcm2835.h"
-}
 
 #define PORT "3000" // the port client will be connecting to 
 #define MAXDATASIZE 100 // max number of bytes we can get at once 
@@ -107,16 +105,16 @@ int readDHT(atmosphereData* aData)
   int counter = 0;
   int laststate = HIGH;
   int j = 0;
-  bcm2835_gpio_write(DHT_PIN, HIGH);
+  bcm2835_gpio_write( DHT_PIN, HIGH );
   usleep(500000);
-  bcm2835_gpio_write(DHT_PIN, LOW);
+  bcm2835_gpio_write( DHT_PIN, LOW );
   usleep(20000);
   bcm2835_gpio_fsel(DHT_PIN, BCM2835_GPIO_FSEL_INPT);
 
   data[0] = data[1] = data[2] = data[3] = data[4] = 0;
 
   // wait for dhtPin to drop
-  while(bcm2835_gpio_lev(dhtPin) != 0) 
+  while(bcm2835_gpio_lev(DHT_PIN) != 0) 
   {
     bcm2835_delay(1000);
   }
@@ -228,7 +226,7 @@ int main()
       continue; // hasn't been a minute? bail
     }
 
-    readDHT( dhtPin, &dhtData );
+    readDHT( &dhtData );
 
     ss << "t="<< dhtData.temp << "&";
 
@@ -236,7 +234,7 @@ int main()
     soundValue = spiWriteRead( spiConfig, &spiData[0], 2 );
     ss << "s="<< soundValue << "&";
     ss << "li=" << lightCount;
-
+    ss << "m=" << (int) pirTriggered;
     // we dont really care what we're sending b/c we're only reading
     string hostname = "162.242.237.33";
     connectAndSend( hostname );
