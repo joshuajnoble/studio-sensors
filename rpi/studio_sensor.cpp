@@ -8,6 +8,7 @@
 #include <sys/socket.h>
 #include <sstream>
 #include <arpa/inet.h>
+#include <ctime>
 #include "spi.h"
 #include "bcm2835.h"
 #define PORT "3000" // the port client will be connecting to 
@@ -16,11 +17,16 @@
 spiConfig *spiConfig;
 
 #define LIGHT_PIN 15
-
+#define PIR_PIN 11
 #define MAXTIMINGS 100
 #define DHT_PIN 12;
 
 using namespace std;
+
+int pirValue;
+bool pirTriggered;
+time_t  timev;
+unsigned long lastReadTime;
 
 struct atmosphereData {
   char temp[2];
@@ -143,6 +149,12 @@ int readDHT(atmosphereData* aData) {
 int main()
 {
 
+  // turn everything on
+  if (!bcm2835_init())
+    return 1;
+
+  pirTriggered = false;
+
   // start up dht sensor
   // Set GPIO dhtPin to output
   bcm2835_gpio_fsel(DHT_PIN, BCM2835_GPIO_FSEL_OUTP);
@@ -170,6 +182,11 @@ int main()
   // enable rising edge
   bcm2835_gpio_ren(LIGHT_PIN);
 
+  // Set RPI pin P1-15 to be an input
+  bcm2835_gpio_fsel(PIR_PIN, BCM2835_GPIO_FSEL_INPT);
+  //  with a pullup
+  bcm2835_gpio_set_pud(PIR_PIN, BCM2835_GPIO_PUD_UP);
+
   while()
   {
 
@@ -178,7 +195,6 @@ int main()
       keep track of time,
       check sound, check movement
       if it's been long enough, throw it up to the sensor
-
      */
 
     // check for event
@@ -190,6 +206,26 @@ int main()
     }
 
     stringstream ss;
+
+    // Read some data
+    uint8_t inPirValue = bcm2835_gpio_lev(PIR_PIN);
+
+    if(inPirValue != pirValue)
+    {
+      pirTriggered = true;
+    }
+
+    time(&timev);
+
+    ////// if we're ready to read //////
+    if( timev.time - lastReadTime > 60 ) // one minute
+    {
+      lastReadTime = timev.time;
+    }
+    else
+    {
+      continue; // hasn't been a minute? bail
+    }
 
     readDHT( dhtPin, &dhtData );
 
@@ -207,5 +243,6 @@ int main()
 
   }
 
+  bcm2835_close();
   return 1;
 }
