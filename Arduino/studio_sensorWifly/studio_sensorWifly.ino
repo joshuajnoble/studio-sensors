@@ -235,16 +235,22 @@ void loop()
 
   // have we connected?
   boolean waitingToConnect = true;
+  
+  while (!wifly.isAssociated()) 
+  {
+    
+    wifly.close();
+    Serial.println("Joining network");
+    wifly.setSSID(WLAN_SSID);
+    wifly.setPassphrase(WLAN_PASS);
+    wifly.enableDHCP();
 
-#ifdef USING_SERIAL
-  Serial.print(" connected? " );
-  Serial.println(cc3000.checkConnected());
-#endif
-
-#ifdef USING_SERIAL
-  Serial.print(" DHCP? " );
-  Serial.println(cc3000.checkDHCP());
-#endif
+    if (wifly.join()) {
+      Serial.println("Joined wifi network");
+    } else {
+      Serial.println("Failed to join wifi network");
+    }
+  }
 
  if (wifly.open(site, 80)) 
  {
@@ -256,7 +262,11 @@ void loop()
     wifly.println(out);
     } else {
         Serial.println("Failed to connect");
-    }
+  }
+  
+  
+  
+  
   pirVal = HIGH;
 
 }
