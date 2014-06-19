@@ -81,13 +81,15 @@ long lastSoundReading;
 uint8_t soundReadings[20];
 uint8_t soundReadingIndex;
 
-char values[122];
+//char values[122];
 uint8_t pirVal;
 
 long lastSend;
 
 #define PIR_PIN 6
 //#define USING_SERIAL
+
+String out = "";
 
 void setup()
 {
@@ -197,7 +199,7 @@ void loop()
 
   // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
   uint8_t h = dht.readHumidity();
-  uint8_t t = dht.readTemperature();
+  uint8_t temp = dht.readTemperature();
 
   //////////////////////////////////////////////////////////////////
   // q - why does this look like this?
@@ -206,99 +208,28 @@ void loop()
   // stick with just not using the string 
   //////////////////////////////////////////////////////////////////
 
-  memset(&values[0], 0, 122);
+  //memset(&values[0], 0, 122);
 
   // set our ID
-
-  values[0] = ' ';
-  values[1] = '/';
-  values[2] = '?';
-  values[3] = 'i';
-  values[4] = '=';
-  values[5] = ID;
-  values[6] = '&';
-
-  loc = 7;
-
-  values[loc] = 'l';
-  loc++;
-  values[loc] = '=';
-  loc++;
-
-  itoa( hz, &values[loc], 16 );
-
-  if(hz < 15 ) { 
-    loc+=1; 
-  }
-  else if(hz < 254 ) { 
-    loc+=2; 
-  }
-  else { 
-    loc+=3; 
-  }
-
-  values[loc] = '&';
-  loc++;
-  values[loc] = 'm';
-  loc++;
-  values[loc] = '=';
-  loc++;
-
+  
+  out += "/?i=";
+  out += ID;
+  out += "&l=";
+  out += hz;
+  out += "&m=";
+  
   if(pirVal == LOW) {
-    values[loc] = '1';
+    out += "1";
   } 
   else {
-    values[loc] = '0';
+    out += "0";
   }
-  loc++;
-
-  values[loc] = '&';
-  loc++;
-  values[loc] = 's';
-  loc++;
-  values[loc] = '=';
-  loc++;
-
-  itoa( soundValue, &values[loc], 16 );
-
-  if(soundValue < 10 ) { 
-    loc+=1; 
-  }
-  else { 
-    loc+=2; 
-  }
-
-  values[loc] = '&';
-  loc++;
-  values[loc] = 't';
-  loc++;
-  values[loc] = '=';
-  loc++;
-
-  itoa( t, &values[loc], 16 );
-
-  if(t < 10 ) { 
-    loc+=1; 
-  }
-  else { 
-    loc+=2; 
-  }
-
-  values[loc] = '&';
-  loc++;
-  values[loc] = 'h';
-  loc++;
-  values[loc] = '=';
-  loc++;
-
-  itoa( h, &values[loc], 16 );
-
-  if(h < 16 ) { 
-    loc+=1; 
-  }
-  else { 
-    loc+=2; 
-  }
+  out += "&s=";
+  out += volume;
+  out += "&t=";
+  out += temp;
+  out += "&h=";
+  out += h;
 
   wifiTimeout = millis();
 
@@ -322,74 +253,10 @@ void loop()
 
     /* Send the request */
     wifly.println("GET / HTTP/1.0");
-    wifly.println(values);
+    wifly.println(out);
     } else {
         Serial.println("Failed to connect");
     }
-
-  // we didn't connect at all?
-  if(waitingToConnect)
-  { // reboot everything
-    /*
-    boolean disconnected = cc3000.disconnect();
-
-#ifdef USING_SERIAL
-    Serial.print(" disconnect " );
-    Serial.print(disconnected);
-#endif
-
-#ifdef USING_SERIAL
-    Serial.println(" cc3300 stop " );
-#endif
-
-    cc3000.stop();
-    
-#ifdef USING_SERIAL
-    Serial.println(" cc3300 power down then up " );
-#endif
-
-    digitalWrite(WIFI_POWER_PIN, LOW);
-    delay(100);
-    digitalWrite(WIFI_POWER_PIN, HIGH);
-    delay(100);
-
-#ifdef USING_SERIAL
-    Serial.println(" cc3300 reboot " );
-#endif
-
-    // reset everything
-    cc3000.reset(ADAFRUIT_CC3000_CS, ADAFRUIT_CC3000_IRQ, ADAFRUIT_CC3000_VBAT, SPI_CLOCK_DIVIDER);
-
-    // wifi
-    if (!cc3000.begin()) {
-      while(1);
-    }
-#ifdef USING_SERIAL
-    Serial.println(" cc3300 restart " );
-    Serial.print(" status " );
-    Serial.println(cc3000.getStatus());
-#endif
-
-      // Connect to AP.
-      while (!cc3000.connectToAP(WLAN_SSID, WLAN_PASS, WLAN_SECURITY)) {
-        delay(10);
-      }
-
-#ifdef USING_SERIAL
-      Serial.println(" connected " );
-#endif
-
-      // Wait for DHCP to be complete
-      while (!cc3000.checkDHCP()) {
-        delay(100);
-      }
-
-#ifdef USING_SERIAL
-      Serial.println(" connected DHCP " );
-#endif
-      */
-  }
-
   pirVal = HIGH;
 
 }
