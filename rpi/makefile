@@ -4,7 +4,7 @@ INC=-I/usr/local/include
 C=g++
 CFLAGS=-c -Wall
 LDFLAGS=lbcm2835
-SOURCES=studio_sensor.cpp spi.cpp bcm2835.c
+SOURCES=studio_sensor.cpp spi.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE=hello
 
