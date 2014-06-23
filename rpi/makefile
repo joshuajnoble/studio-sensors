@@ -1,10 +1,10 @@
-LIB=-L/usr/local/lib
-INC=-I/usr/local/include
+LIB=-L
+INC=-I
 
 C=g++
 CFLAGS=-c -Wall
-LDFLAGS=lbcm2835
-SOURCES=studio_sensor.cpp spi.cpp
+LDFLAGS=
+SOURCES=studio_sensor.cpp spi.cpp pi_mmio.c common_dht_read.c
 OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE=hello
 

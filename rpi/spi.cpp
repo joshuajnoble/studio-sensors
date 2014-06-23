@@ -58,7 +58,7 @@ int spiOpen(spiConfig *spic, char *spiDevice, int length)
 	return statusVal;
 }
 
-int spiClose(spiConfig *spic,)
+int spiClose(spiConfig *spic)
 {
 	int statusVal = -1;
 	statusVal = close(spic->spifd);

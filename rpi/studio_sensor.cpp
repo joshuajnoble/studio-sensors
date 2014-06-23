@@ -1,7 +1,6 @@
 #include <stdio.h>
-#include <unistd.h>
 #include <errno.h>
-#include <string.h>
+#include <string>
 #include <netdb.h>
 #include <sys/types.h>
 #include <netinet/in.h>
@@ -9,10 +8,12 @@
 #include <sstream>
 #include <arpa/inet.h>
 #include <ctime>
-#include "common_dht_read.h"
-#include "spi.h" 
-#include "pi_mmio.h"
+#include "spi.h"
 
+extern "C" { 
+   #include "common_dht_read.h"
+   #include "pi_mmio.h"
+}
 #define PORT "3000" // the port client will be connecting to 
 
 #define MAXDATASIZE 100 // max number of bytes we can get at once 
@@ -30,10 +31,11 @@ int pirValue;
 bool pirTriggered;
 time_t  timev;
 unsigned long lastReadTime;
+unsigned int lightCount;
 
 struct atmosphereData {
-  char temp[2];
-  char humidity[2];
+  float temperature;
+  float humidity;
 };
 
 // get sockaddr, IPv4 or IPv6:
@@ -81,7 +83,7 @@ int connectAndSend( string hostname )
 
     if (p == NULL) {
         fprintf(stderr, "client: failed to connect\n");
-        return 2;
+        return 0;
     }
 
     inet_ntop(p->ai_family, get_in_addr((struct sockaddr *)p->ai_addr), s, sizeof s);
@@ -91,7 +93,8 @@ int connectAndSend( string hostname )
 
     if ((numbytes = recv(sockfd, buf, MAXDATASIZE-1, 0)) == -1) {
         perror("recv");
-        exit(1);
+        //exit(1);
+	return 0;
     }
 
     buf[numbytes] = '\0';
@@ -99,6 +102,7 @@ int connectAndSend( string hostname )
     printf("client: received '%s'\n",buf);
 
     close(sockfd);
+   return 1;
 }
 
 
@@ -109,31 +113,31 @@ int readDHT(atmosphereData *aData)
   int pulseCounts[DHT_PULSES*2] = {0};
 
   // Set pin to output.
-  pi_mmio_set_output(pin);
+  pi_mmio_set_output(DHT_PIN);
 
   // Bump up process priority and change scheduler to try to try to make process more 'real time'.
   set_max_priority();
 
   // Set pin high for ~500 milliseconds.
-  pi_mmio_set_high(pin);
+  pi_mmio_set_high(DHT_PIN);
   sleep_milliseconds(500);
 
   // The next calls are timing critical and care should be taken
   // to ensure no unnecssary work is done below.
 
   // Set pin low for ~20 milliseconds.
-  pi_mmio_set_low(pin);
+  pi_mmio_set_low(DHT_PIN);
   busy_wait_milliseconds(20);
 
   // Set pin at input.
-  pi_mmio_set_input(pin);
+  pi_mmio_set_input(DHT_PIN);
   // Need a very short delay before reading pins or else value is sometimes still low.
   for (volatile int i = 0; i < 50; ++i) {
   }
 
   // Wait for DHT to pull pin low.
   uint32_t count = 0;
-  while (pi_mmio_input(pin)) {
+  while (pi_mmio_input(DHT_PIN)) {
     if (++count >= DHT_MAXCOUNT) {
       // Timeout waiting for response.
       set_default_priority();
@@ -144,7 +148,7 @@ int readDHT(atmosphereData *aData)
   // Record pulse widths for the expected result bits.
   for (int i=0; i < DHT_PULSES*2; i+=2) {
     // Count how long pin is low and store in pulseCounts[i]
-    while (!pi_mmio_input(pin)) {
+    while (!pi_mmio_input(DHT_PIN)) {
       if (++pulseCounts[i] >= DHT_MAXCOUNT) {
         // Timeout waiting for response.
         set_default_priority();
@@ -152,7 +156,7 @@ int readDHT(atmosphereData *aData)
       }
     }
     // Count how long pin is high and store in pulseCounts[i+1]
-    while (pi_mmio_input(pin)) {
+    while (pi_mmio_input(DHT_PIN)) {
       if (++pulseCounts[i+1] >= DHT_MAXCOUNT) {
         // Timeout waiting for response.
         set_default_priority();
@@ -193,19 +197,12 @@ int readDHT(atmosphereData *aData)
 
   // Verify checksum of received data.
   if (data[4] == ((data[0] + data[1] + data[2] + data[3]) & 0xFF)) {
-    if (type == DHT11) {
-      // Get humidity and temp for DHT11 sensor.
-      *humidity = (float)data[0];
-      *temperature = (float)data[2];
-    }
-    else if (type == DHT22) {
       // Calculate humidity and temp for DHT22 sensor.
       aData->humidity = (data[0] * 256 + data[1]) / 10.0f;
       aData->temperature = ((data[2] & 0x7F) * 256 + data[3]) / 10.0f;
       if (data[2] & 0x80) {
         aData->temperature *= -1.0f;
       }
-    }
     return DHT_SUCCESS;
   }
   else {
@@ -226,7 +223,7 @@ int main()
 
   // start up dht sensor
   // Set GPIO dhtPin to output
-  bcm2835_gpio_fsel(DHT_PIN, BCM2835_GPIO_FSEL_OUTP);
+  pi_mmio_set_input(DHT_PIN);
 
   // startup spi
   spidata.mode = SPI_MODE_0;
@@ -234,9 +231,9 @@ int main()
   spidata.speed = 1000000;
   spidata.spifd = -1;
 
-  const char adc08636[] = "/dev/spidev0.0";
+  char adc08636[] = "/dev/spidev0.0";
 
-  if(spiOpen(spidata, &adc08636[0], sizeof(adc08636))) < 0) {
+  if(spiOpen(&spidata, &adc08636[0], sizeof(adc08636)) < 0) {
     perror(" can't open spidev0.0");
   }
 
@@ -251,7 +248,7 @@ int main()
   // Set RPI pin P1-15 to be an input
   pi_mmio_set_input(PIR_PIN);
 
-  while()
+  while(true)
   {
 
     /*
@@ -280,9 +277,9 @@ int main()
     time(&timev);
 
     ////// if we're ready to read //////
-    if( timev.time - lastReadTime > 60 ) // one minute
+    if( timev - lastReadTime > 60 ) // one minute
     {
-      lastReadTime = timev.time;
+      lastReadTime = timev;
     }
     else
     {
@@ -291,10 +288,10 @@ int main()
 
     readDHT( &dhtData );
 
-    ss << "t="<< dhtData.temp << "&";
+    ss << "t="<< dhtData.temperature << "&";
 
     ss << "h="<< dhtData.humidity << "&";
-    soundValue = spiWriteRead( spidata, &spiData[0], 2 );
+    soundValue = spiWriteRead( &spidata, &spiData[0], 2 );
     ss << "s="<< soundValue << "&";
     ss << "li=" << lightCount;
     ss << "m=" << (int) pirTriggered;
@@ -305,6 +302,5 @@ int main()
 
   }
 
-  bcm2835_close();
   return 1;
 }
