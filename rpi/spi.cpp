@@ -83,7 +83,7 @@ int spiWriteRead( spiConfig *spic, unsigned char * data, int length )
 
 		spi[i].tx_buf = (unsigned long) (data+i);
 		spi[i].rx_buf = (unsigned long) (data+i);
-		spi[i].length = sizeof(*(data+i));
+		spi[i].len = sizeof(*(data+i));
 		spi[i].delay_usecs = 0;
 		spi[i].speed_hz = spic->speed;
 		spi[i].bits_per_word = spic->bitsPerWord;
