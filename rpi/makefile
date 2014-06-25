@@ -1,12 +1,12 @@
-LIB=-L/usr/local/lib
-INC=-I/usr/local/include
+LIB=-L
+INC=-I
 
-C=g++
+CC=g++
 CFLAGS=-c -Wall
-LDFLAGS=lbcm2835
-SOURCES=studio_sensor.cpp spi.cpp bcm2835.c
+LDFLAGS=-lrt
+SOURCES=spi.cpp common_dht_read.c studio_sensor.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
-EXECUTABLE=hello
+EXECUTABLE=studio_sensor
 
 all: $(SOURCES) $(EXECUTABLE)
 	

@@ -1,26 +1,31 @@
 #include <stdio.h>
-#include <unistd.h>
 #include <errno.h>
-#include <string.h>
+#include <string>
 #include <netdb.h>
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <sstream>
 #include <arpa/inet.h>
-#include <ctime>
 #include "spi.h"
+#include <string.h>
+#include <time.h>
+#include <sys/time.h>
 
-   #include "bcm2835.h"
-
+extern "C" { 
+   #include "pi_mmio.h"
+   #include "common_dht_read.h"
+}
 #define PORT "3000" // the port client will be connecting to 
+
 #define MAXDATASIZE 100 // max number of bytes we can get at once 
-spiConfig *spiConfig;
+spiConfig spidata;
 
 #define LIGHT_PIN 15
 #define PIR_PIN 11
-#define MAXTIMINGS 100
-#define DHT_PIN 12;
+#define DHT_MAXCOUNT 32000
+#define DHT_PULSES 41
+#define DHT_PIN 12
 
 using namespace std;
 
@@ -28,10 +33,11 @@ int pirValue;
 bool pirTriggered;
 time_t  timev;
 unsigned long lastReadTime;
+unsigned int lightCount;
 
 struct atmosphereData {
-  char temp[2];
-  char humidity[2];
+  float temperature;
+  float humidity;
 };
 
 // get sockaddr, IPv4 or IPv6:
@@ -52,7 +58,7 @@ int connectAndSend( string hostname )
     int rv;
     char s[INET6_ADDRSTRLEN];
 
-    memset(&hints, 0, sizeof hints);
+    memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
 
@@ -79,7 +85,7 @@ int connectAndSend( string hostname )
 
     if (p == NULL) {
         fprintf(stderr, "client: failed to connect\n");
-        return 2;
+        return 0;
     }
 
     inet_ntop(p->ai_family, get_in_addr((struct sockaddr *)p->ai_addr), s, sizeof s);
@@ -89,7 +95,8 @@ int connectAndSend( string hostname )
 
     if ((numbytes = recv(sockfd, buf, MAXDATASIZE-1, 0)) == -1) {
         perror("recv");
-        exit(1);
+        //exit(1);
+	return 0;
     }
 
     buf[numbytes] = '\0';
@@ -97,50 +104,111 @@ int connectAndSend( string hostname )
     printf("client: received '%s'\n",buf);
 
     close(sockfd);
+   return 1;
 }
 
 
-int readDHT(atmosphereData* aData)
+int readDHT(atmosphereData *aData)
 {
-  int counter = 0;
-  int laststate = HIGH;
-  int j = 0;
-  bcm2835_gpio_write( DHT_PIN, HIGH );
-  usleep(500000);
-  bcm2835_gpio_write( DHT_PIN, LOW );
-  usleep(20000);
-  bcm2835_gpio_fsel(DHT_PIN, BCM2835_GPIO_FSEL_INPT);
+   // Store the count that each DHT bit pulse is low and high.
+  // Make sure array is initialized to start at zero.
+  int pulseCounts[DHT_PULSES*2] = {0};
 
-  data[0] = data[1] = data[2] = data[3] = data[4] = 0;
+  // Set pin to output.
+  pi_mmio_set_output(DHT_PIN);
 
-  // wait for dhtPin to drop
-  while(bcm2835_gpio_lev(DHT_PIN) != 0) 
-  {
-    bcm2835_delay(1000);
+  // Bump up process priority and change scheduler to try to try to make process more 'real time'.
+  set_max_priority();
+
+  // Set pin high for ~500 milliseconds.
+  pi_mmio_set_high(DHT_PIN);
+  sleep_milliseconds(500);
+
+  // The next calls are timing critical and care should be taken
+  // to ensure no unnecssary work is done below.
+
+  // Set pin low for ~20 milliseconds.
+  pi_mmio_set_low(DHT_PIN);
+  busy_wait_milliseconds(20);
+
+  // Set pin at input.
+  pi_mmio_set_input(DHT_PIN);
+  // Need a very short delay before reading pins or else value is sometimes still low.
+  for (volatile int i = 0; i < 50; ++i) {
   }
 
-  // read data!
-  for (int i=0; i< MAXTIMINGS; i++) {
-    counter = 0;
-    while ( bcm2835_gpio_lev(DHT_PIN) == laststate) {
-        counter++;
-        //nanosleep(1);   // overclocking might change this?
-        if (counter == 1000) {
-           break;
-         }
+  // Wait for DHT to pull pin low.
+  uint32_t count = 0;
+  while (pi_mmio_input(DHT_PIN)) {
+    if (++count >= DHT_MAXCOUNT) {
+      // Timeout waiting for response.
+      set_default_priority();
+      return DHT_ERROR_TIMEOUT;
     }
-    laststate = bcm2835_gpio_lev(DHT_PIN);
-    if (counter == 1000) break;
-    bits[bitidx++] = counter;
+  }
 
-    if ((i>3) && (i%2 == 0)) {
-      // shove each bit into the storage bytes
-      data[j/8] <<= 1;
-      if (counter > 200) {
-        data[j/8] |= 1;
+  // Record pulse widths for the expected result bits.
+  for (int i=0; i < DHT_PULSES*2; i+=2) {
+    // Count how long pin is low and store in pulseCounts[i]
+    while (!pi_mmio_input(DHT_PIN)) {
+      if (++pulseCounts[i] >= DHT_MAXCOUNT) {
+        // Timeout waiting for response.
+        set_default_priority();
+        return DHT_ERROR_TIMEOUT;
       }
-      j++;
     }
+    // Count how long pin is high and store in pulseCounts[i+1]
+    while (pi_mmio_input(DHT_PIN)) {
+      if (++pulseCounts[i+1] >= DHT_MAXCOUNT) {
+        // Timeout waiting for response.
+        set_default_priority();
+        return DHT_ERROR_TIMEOUT;
+      }
+    }
+  }
+
+  // Done with timing critical code, now interpret the results.
+
+  // Drop back to normal priority.
+  set_default_priority();
+
+  // Compute the average low pulse width to use as a 50 microsecond reference threshold.
+  // Ignore the first two readings because they are a constant 80 microsecond pulse.
+  uint32_t threshold = 0;
+  for (int i=2; i < DHT_PULSES*2; i+=2) {
+    threshold += pulseCounts[i];
+  }
+  threshold /= DHT_PULSES-1;
+
+  // Interpret each high pulse as a 0 or 1 by comparing it to the 50us reference.
+  // If the count is less than 50us it must be a ~28us 0 pulse, and if it's higher
+  // then it must be a ~70us 1 pulse.
+  uint8_t data[5] = {0};
+  for (int i=3; i < DHT_PULSES*2; i+=2) {
+    int index = (i-3)/16;
+    data[index] <<= 1;
+    if (pulseCounts[i] >= threshold) {
+      // One bit for long pulse.
+      data[index] |= 1;
+    }
+    // Else zero bit for short pulse.
+  }
+
+  // Useful debug info:
+  //printf("Data: 0x%x 0x%x 0x%x 0x%x 0x%x\n", data[0], data[1], data[2], data[3], data[4]);
+
+  // Verify checksum of received data.
+  if (data[4] == ((data[0] + data[1] + data[2] + data[3]) & 0xFF)) {
+      // Calculate humidity and temp for DHT22 sensor.
+      aData->humidity = (data[0] * 256 + data[1]) / 10.0f;
+      aData->temperature = ((data[2] & 0x7F) * 256 + data[3]) / 10.0f;
+      if (data[2] & 0x80) {
+        aData->temperature *= -1.0f;
+      }
+    return DHT_SUCCESS;
+  }
+  else {
+    return DHT_ERROR_CHECKSUM;
   }
 }
 
@@ -148,26 +216,26 @@ int main()
 {
 
   // turn everything on
-  if (!bcm2835_init())
+  if (!pi_mmio_init() < 0)
   {
-	return 1;
+	return -1;
   }
 
   pirTriggered = false;
 
   // start up dht sensor
   // Set GPIO dhtPin to output
-  bcm2835_gpio_fsel(DHT_PIN, BCM2835_GPIO_FSEL_OUTP);
+  pi_mmio_set_input(DHT_PIN);
 
   // startup spi
-  spiConfig->mode = SPI_MODE_0;
-  spiConfig->bitsPerWord = 8;
-  spiConfig->speed = 1000000;
-  spiConfig->spifd = -1;
+  spidata.mode = SPI_MODE_0;
+  spidata.bitsPerWord = 8;
+  spidata.speed = 1000000;
+  spidata.spifd = -1;
 
-  const char adc08636[] = "/dev/spidev0.0";
+  char adc08636[] = "/dev/spidev0.0";
 
-  if(spiOpen(spiConfig, &adc08636[0], sizeof(adc08636))) < 0) {
+  if(spiOpen(&spidata, &adc08636[0], sizeof(adc08636)) < 0) {
     perror(" can't open spidev0.0");
   }
 
@@ -177,16 +245,12 @@ int main()
   int soundValue;
 
   // Set RPI pin P1-15 to be an input
-  bcm2835_gpio_fsel(LIGHT_PIN, BCM2835_GPIO_FSEL_INPT);
-  // enable rising edge
-  bcm2835_gpio_ren(LIGHT_PIN);
+  pi_mmio_set_input(LIGHT_PIN);  
 
   // Set RPI pin P1-15 to be an input
-  bcm2835_gpio_fsel(PIR_PIN, BCM2835_GPIO_FSEL_INPT);
-  //  with a pullup
-  bcm2835_gpio_set_pud(PIR_PIN, BCM2835_GPIO_PUD_UP);
+  pi_mmio_set_input(PIR_PIN);
 
-  while()
+  while(true)
   {
 
     /*
@@ -197,17 +261,15 @@ int main()
      */
 
     // check for event
-    if (bcm2835_gpio_eds(LIGHT_PIN))
+    if (pi_mmio_input(LIGHT_PIN))
     {
       lightCount++;
-      // Now clear the eds flag by setting it to 1
-      bcm2835_gpio_set_eds(LIGHT_PIN);
     }
 
     stringstream ss;
 
     // Read some data
-    uint8_t inPirValue = bcm2835_gpio_lev(PIR_PIN);
+    uint8_t inPirValue = pi_mmio_input(PIR_PIN);
 
     if(inPirValue != pirValue)
     {
@@ -217,9 +279,9 @@ int main()
     time(&timev);
 
     ////// if we're ready to read //////
-    if( timev.time - lastReadTime > 60 ) // one minute
+    if( timev - lastReadTime > 60 ) // one minute
     {
-      lastReadTime = timev.time;
+      lastReadTime = timev;
     }
     else
     {
@@ -228,10 +290,10 @@ int main()
 
     readDHT( &dhtData );
 
-    ss << "t="<< dhtData.temp << "&";
+    ss << "t="<< dhtData.temperature << "&";
 
     ss << "h="<< dhtData.humidity << "&";
-    soundValue = spiWriteRead( spiConfig, &spiData[0], 2 );
+    soundValue = spiWriteRead( &spidata, &spiData[0], 2 );
     ss << "s="<< soundValue << "&";
     ss << "li=" << lightCount;
     ss << "m=" << (int) pirTriggered;
@@ -242,6 +304,5 @@ int main()
 
   }
 
-  bcm2835_close();
   return 1;
 }
