@@ -7,12 +7,14 @@
 #include <sys/socket.h>
 #include <sstream>
 #include <arpa/inet.h>
-#include <ctime>
 #include "spi.h"
+#include <string.h>
+#include <time.h>
+#include <sys/time.h>
 
 extern "C" { 
-   #include "common_dht_read.h"
    #include "pi_mmio.h"
+   #include "common_dht_read.h"
 }
 #define PORT "3000" // the port client will be connecting to 
 
@@ -56,7 +58,7 @@ int connectAndSend( string hostname )
     int rv;
     char s[INET6_ADDRSTRLEN];
 
-    memset(&hints, 0, sizeof hints);
+    memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
 

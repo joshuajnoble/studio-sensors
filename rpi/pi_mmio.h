@@ -20,19 +20,54 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#pragma once
+
 // Simple fast memory-mapped GPIO library for the Raspberry Pi.
 #ifndef PI_MMIO_H
 #define PI_MMIO_H
 
 #include <stdint.h>
+#include <fcntl.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+
 
 #define MMIO_SUCCESS 0
 #define MMIO_ERROR_DEVMEM -1
 #define MMIO_ERROR_MMAP -2
 
+#define BASE 0x20000000
+#define GPIO_BASE (BASE + 0x200000)
+#define GPIO_LENGTH 4096
+
+
+
 volatile uint32_t* pi_mmio_gpio;
 
-int pi_mmio_init(void);
+//int pi_mmio_init(void);
+
+int pi_mmio_init(void) {
+  if (pi_mmio_gpio == NULL) {
+    int fd = open("/dev/mem", O_RDWR | O_SYNC);
+    if (fd == -1) {
+      // Error opening /dev/mem.  Probably not running as root.
+      return MMIO_ERROR_DEVMEM;
+    }
+    // Map GPIO memory to location in process space.
+    pi_mmio_gpio = (uint32_t*)mmap(NULL, GPIO_LENGTH, PROT_READ | PROT_WRITE, MAP_SHARED, fd, GPIO_BASE);
+    close(fd);
+    if (pi_mmio_gpio == MAP_FAILED) {
+      // Don't save the result if the memory mapping failed.
+      pi_mmio_gpio = NULL;
+      return MMIO_ERROR_MMAP;
+    }
+  }
+  return MMIO_SUCCESS;
+}
 
 static inline void pi_mmio_set_input(const int gpio_number) {
   // Set GPIO register to 000 for specified GPIO number.

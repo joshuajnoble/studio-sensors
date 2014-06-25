@@ -35,6 +35,8 @@
 #define DHT22 22
 #define AM2302 22
 
+extern "C" {
+
 // Busy wait delay for most accurate timing, but high CPU usage.
 // Only use this for short periods of time (a few hundred milliseconds at most)!
 void busy_wait_milliseconds(uint32_t millis);
@@ -47,5 +49,5 @@ void set_max_priority(void);
 
 // Drop scheduling priority back to normal/default.
 void set_default_priority(void);
-
+}
 #endif

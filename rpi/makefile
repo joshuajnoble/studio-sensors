@@ -1,12 +1,12 @@
 LIB=-L
 INC=-I
 
-C=g++
+CC=g++
 CFLAGS=-c -Wall
-LDFLAGS=
-SOURCES=studio_sensor.cpp spi.cpp pi_mmio.c common_dht_read.c
+LDFLAGS=-lrt
+SOURCES=spi.cpp common_dht_read.c studio_sensor.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
-EXECUTABLE=hello
+EXECUTABLE=studio_sensor
 
 all: $(SOURCES) $(EXECUTABLE)
 	
