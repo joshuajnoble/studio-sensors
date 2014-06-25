@@ -264,9 +264,6 @@ void loop()
         Serial.println("Failed to connect");
   }
   
-  
-  
-  
   pirVal = HIGH;
 
 }
