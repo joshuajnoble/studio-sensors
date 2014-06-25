@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <iostream>
 #include <errno.h>
 #include <string>
 #include <netdb.h>
@@ -25,7 +26,7 @@ spiConfig spidata;
 #define PIR_PIN 11
 #define DHT_MAXCOUNT 32000
 #define DHT_PULSES 41
-#define DHT_PIN 12
+#define DHT_PIN 23
 
 using namespace std;
 
@@ -220,12 +221,19 @@ int main()
   {
 	return -1;
   }
+  else
+  {
+    std::cout << " pi_mmio initialized " << std::endl;
+  }
 
   pirTriggered = false;
 
   // start up dht sensor
   // Set GPIO dhtPin to output
+  std::cout << " about to call set input " << std::endl;
   pi_mmio_set_input(DHT_PIN);
+
+  std::cout << " DHT pin set " << std::endl;
 
   // startup spi
   spidata.mode = SPI_MODE_0;
@@ -235,9 +243,13 @@ int main()
 
   char adc08636[] = "/dev/spidev0.0";
 
+  std::cout << " about to call spiOpen " << std::endl;
+
   if(spiOpen(&spidata, &adc08636[0], sizeof(adc08636)) < 0) {
-    perror(" can't open spidev0.0");
+    std::cout << " can't open spidev0.0" << std::endl;
+    return -1;
   }
+	
 
   atmosphereData dhtData;
   unsigned char dataDump[255];
@@ -250,15 +262,14 @@ int main()
   // Set RPI pin P1-15 to be an input
   pi_mmio_set_input(PIR_PIN);
 
+  std::cout << " starting loop " << std::endl;
+
   while(true)
   {
 
-    /*
-
-      keep track of time,
-      check sound, check movement
-      if it's been long enough, throw it up to the sensor
-     */
+    // keep track of time,
+    // check sound, check movement
+    // if it's been long enough, throw it up to the sensor
 
     // check for event
     if (pi_mmio_input(LIGHT_PIN))
@@ -281,13 +292,14 @@ int main()
     ////// if we're ready to read //////
     if( timev - lastReadTime > 60 ) // one minute
     {
+      std::cout << " it's been a minute " << std::endl;
       lastReadTime = timev;
     }
     else
     {
       continue; // hasn't been a minute? bail
     }
-
+/*
     readDHT( &dhtData );
 
     ss << "t="<< dhtData.temperature << "&";
@@ -300,7 +312,7 @@ int main()
     // we dont really care what we're sending b/c we're only reading
     string hostname = "162.242.237.33";
     connectAndSend( hostname );
-    
+*/  
 
   }
 
