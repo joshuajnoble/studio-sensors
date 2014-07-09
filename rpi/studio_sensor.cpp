@@ -12,10 +12,12 @@
 #include <time.h>
 #include <sys/time.h>
 
-extern "C" { 
+extern "C" 
+{ 
    #include "pi_mmio.h"
    #include "common_dht_read.h"
 }
+
 #define PORT "3000" // the port client will be connecting to 
 
 #define MAXDATASIZE 100 // max number of bytes we can get at once 
@@ -96,7 +98,7 @@ int connectAndSend( string hostname )
     if ((numbytes = recv(sockfd, buf, MAXDATASIZE-1, 0)) == -1) {
         perror("recv");
         //exit(1);
-	return 0;
+	      return 0;
     }
 
     buf[numbytes] = '\0';
@@ -104,7 +106,7 @@ int connectAndSend( string hostname )
     printf("client: received '%s'\n",buf);
 
     close(sockfd);
-   return 1;
+    return 1;
 }
 
 
@@ -193,9 +195,6 @@ int readDHT(atmosphereData *aData)
     }
     // Else zero bit for short pulse.
   }
-
-  // Useful debug info:
-  //printf("Data: 0x%x 0x%x 0x%x 0x%x 0x%x\n", data[0], data[1], data[2], data[3], data[4]);
 
   // Verify checksum of received data.
   if (data[4] == ((data[0] + data[1] + data[2] + data[3]) & 0xFF)) {
