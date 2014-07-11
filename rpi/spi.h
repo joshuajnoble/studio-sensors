@@ -21,5 +21,4 @@ struct spiConfig {
 
 int spiOpen(spiConfig *spic, char *spiDevice, int length);
 int spiClose(spiConfig *spic );
-
 int spiWriteRead( spiConfig *spic, unsigned char * data, int length );
