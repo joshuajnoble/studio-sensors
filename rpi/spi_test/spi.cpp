@@ -94,7 +94,14 @@ int spiWriteRead( spiConfig *spic, unsigned char * data, int length )
 	if(retVal < 0)
 	{
 		perror(" can't transmit spi data");
+		return -1;
 	}
-	return ((data[0] << 7) | (data[1] >> 1)) & 0x3FF; // get a nice number
+    
+	//return retVal;
+	int a2d;
+	a2d = (data[1] <<  8) & 0b1100000000;
+	a2d |= (data[2] & 0xff);
+	return a2d;
+
 }
 
