@@ -1,13 +1,16 @@
-
+//
 // compiled for g++
 // 
 
+extern "C" {
+	#include "/usr/local/include/bcm2835.h"
+}
 #include <iostream>
-#include <bcm2835.h>
 #include <time.h>
 
 int lightCount;
-const int LIGHT_PIN = 15;
+#define PIN RPI_V2_GPIO_P1_26
+
 
 long int last_heartbeat;
 long int heartbeat_difference;
@@ -16,21 +19,33 @@ struct timespec gettime_now;
 int main()
 {
 
+	std::cout << " tsl 235 " << std::endl;
+
+
+    if (!bcm2835_init())
+		return 1;
+
+
 	lightCount = 0;
 
 	// Set RPI pin P1-15 to be an input
-	bcm2835_gpio_fsel(LIGHT_PIN, BCM2835_GPIO_FSEL_INPT);
+	bcm2835_gpio_fsel(PIN, BCM2835_GPIO_FSEL_INPT);
+	
+	std::cout << " ok fsel ok " << std::endl;
+
 	// enable rising edge
-	bcm2835_gpio_ren(LIGHT_PIN);
+	bcm2835_gpio_ren(PIN);
+	
+	std::cout << " tsl 235 " << std::endl;
 
 	while(true)
 	{
 	    // check for event
-	    if (bcm2835_gpio_eds(LIGHT_PIN))
+	    if (bcm2835_gpio_eds(PIN))
 	    {
 	      lightCount++;
 	      // Now clear the eds flag by setting it to 1
-	      bcm2835_gpio_set_eds(LIGHT_PIN);
+	      bcm2835_gpio_set_eds(PIN);
 		}
 	 
 		clock_gettime(CLOCK_REALTIME, &gettime_now);
@@ -41,7 +56,6 @@ int main()
 		}
 
 		if (heartbeat_difference > 1000000) {
-			std::cout << lightCount << std::endl;
 			lightCount = 0;
 			last_heartbeat += 1000000;
 		}
