@@ -3,7 +3,7 @@
 // 
 
 extern "C" {
-	#include "/usr/local/include/bcm2835.h"
+	#include <bcm2835.h>
 }
 #include <iostream>
 #include <time.h>
@@ -14,51 +14,87 @@ int lightCount;
 
 long int last_heartbeat;
 long int heartbeat_difference;
-struct timespec gettime_now; 
+struct timespec gettime_now, gettime_last;
+
+unsigned long int time_diff( struct timespec start, struct timespec stop )
+{
+
+	unsigned long int r1;
+	r1 = (unsigned long int) (stop.tv_sec - start.tv_sec * 1000000000 + (stop.tv_nsec - start.tv_nsec));
+	return r1;
+
+}
 
 int main()
 {
 
 	std::cout << " tsl 235 " << std::endl;
 
-
-    if (!bcm2835_init())
+/*
+    if (pi_mmio_init() != 0) {
+		std::cout << " can't init pi mmio lib " << std::endl;
 		return 1;
-
-
-	lightCount = 0;
-
-	// Set RPI pin P1-15 to be an input
-	bcm2835_gpio_fsel(PIN, BCM2835_GPIO_FSEL_INPT);
-	
-	std::cout << " ok fsel ok " << std::endl;
+	}
 
 	// enable rising edge
-	bcm2835_gpio_ren(PIN);
-	
-	std::cout << " tsl 235 " << std::endl;
+    pi_mmio_set_input( 7 );
 
 	while(true)
 	{
-	    // check for event
-	    if (bcm2835_gpio_eds(PIN))
-	    {
-	      lightCount++;
-	      // Now clear the eds flag by setting it to 1
-	      bcm2835_gpio_set_eds(PIN);
+		//while( pi_mmio_input(7) != 0) {
+			// wait for low;
+		//}
+		while( pi_mmio_input(7) == 0)
+		{
+			// in low
 		}
-	 
-		clock_gettime(CLOCK_REALTIME, &gettime_now);
-		heartbeat_difference = gettime_now.tv_nsec - last_heartbeat;		//Get nS value
-		
-		if (heartbeat_difference < 0) {
-			heartbeat_difference += 1000000000;				//(Rolls over every 1 second)
+		// now gettime to get rising edge
+		clock_gettime(CLOCK_REALTIME, &gettime_last);
+		while( pi_mmio_input(7) != 0)
+		{
+			// now waiting for falling edge to get whole cycle
+			
+		}
+ 		clock_gettime(CLOCK_REALTIME, &gettime_now);
+
+		unsigned long int diff = time_diff(gettime_last, gettime_now); 
+		std::cout << " diff " << diff << std::endl;
+
+		sleep(1);	
+	}
+*/
+
+	if(bcm2835_init())
+	{
+		bcm2835_gpio_afen( PIN );
+		bcm2835_gpio_set_eds(PIN);
+		int sample_count = 10;
+		while( 1 )
+		{
+
+			clock_gettime(CLOCK_REALTIME, &gettime_last);
+			for( int i = 0; i < sample_count; i++ )
+			{
+					while( bcm2835_gpio_eds(PIN) != HIGH )
+					{
+					}
+					
+					bcm2835_gpio_set_eds(PIN);
+			}
+			clock_gettime(CLOCK_REALTIME, &gettime_now);
+			unsigned long int diff = time_diff(gettime_last, gettime_now); 
+	   		std::cout << " diff in mhz " << diff << std::endl;
+	   		//std::cout << " diff in mhz " << diff << std::endl;
+			
+			sleep(2);
+	
 		}
 
-		if (heartbeat_difference > 1000000) {
-			lightCount = 0;
-			last_heartbeat += 1000000;
-		}
 	}
+	else
+	{
+		std::cout << " NO BCM ALL IS LOST " << std::endl;
+	}
+
 	return 1;
 }
