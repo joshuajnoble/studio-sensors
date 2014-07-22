@@ -82,8 +82,9 @@ int main()
 					bcm2835_gpio_set_eds(PIN);
 			}
 			clock_gettime(CLOCK_REALTIME, &gettime_now);
-			unsigned long int diff = time_diff(gettime_last, gettime_now); 
-	   		std::cout << " diff in mhz " << diff << std::endl;
+			unsigned long int diff = time_diff(gettime_last, gettime_now);
+			double sample_rate = (double) sample_count * 1000000.0; 
+	   		std::cout << " diff in mhz " << sample_rate / (double) (diff/1000) << std::endl;
 	   		//std::cout << " diff in mhz " << diff << std::endl;
 			
 			sleep(2);

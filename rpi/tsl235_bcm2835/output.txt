@@ -1,0 +1,19 @@
+ tsl 235 
+ diff in mhz 3.77786
+ diff in mhz 15.4629
+ diff in mhz 3.37873
+ diff in mhz 10.5319
+ diff in mhz 3.07093
+ diff in mhz 8.00742
+ diff in mhz 2.82085
+ diff in mhz 6.50004
+ diff in mhz 2.60543
+ diff in mhz 5.43826
+ diff in mhz 2.42238
+ diff in mhz 4.6773
+ diff in mhz 70.9764
+ diff in mhz 4.10946
+ diff in mhz 23.0291
+ diff in mhz 3.66187
+ diff in mhz 13.7605
+ diff in mhz 3.32518
