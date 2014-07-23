@@ -1,3 +1,10 @@
-Using BCM2835
+Ok, so this is the RPI version of the sensor.
 
-http://www.airspayce.com/mikem/bcm2835/bcm2835-1.36.tar.gz
+Mic: run through the MCP3002. The gain is turned up by removing the guard sensor on the Sparkfun Sound Detector (r3) and adding a 100k resistor (r17)
+
+DHT22: run directly into the RPI
+
+Light Sensor:
+
+ TSL235R, connected on GPIO7
+
