@@ -76,7 +76,7 @@ if __name__ == "__main__":
             	humidity, temperature = Adafruit_DHT.read_retry(sensor, pin)
                 send += "&t=" + str(temperature) + "&h=" + str(humidity)
 
-            urllib2.urlopen("http://example.com/foo/bar")
+            urllib2.urlopen("http://162.242.237.33")
             urllib2.close()
 
             last_send = time.time()
