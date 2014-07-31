@@ -1,0 +1,47 @@
+First: SPI
+
+
+sudo nano /etc/modprobe.d/raspi-blacklist.conf
+
+make sure there IS a # before blacklist spi-bcm2708, so it looks like this...
+#blacklist spi-bcm2708
+
+Adding this # prevents SPI being disabled. If you had to change it, you'll need to 
+reboot to activate SPI.
+
+sudo reboot
+
+You will need to install the Python SPI wrapper: (Python 2.7)
+
+cd ~ 
+git clone git://github.com/doceme/py-spidev 
+
+
+If you don’t have git installed, the above command will fail. Install git with...
+
+sudo apt-get update
+sudo apt-get install git
+
+When asked if you want to continue, answer Y
+then, after installation, try again
+git clone git://github.com/doceme/py-spidev
+
+then it should copy the files into a directory called py-spidev. Go there next
+
+cd py-spidev/ 
+If you have already installed WiringPi for Python the next step (python-dev) may not be necessary...
+
+then type
+sudo apt-get install python-dev
+y (to confirm). 
+
+sudo python setup.py install
+
+
+wget abyz.co.uk/rpi/pigpio/pigpio.zip
+unzip pigpio.zip
+cd PIGPIO
+make
+make install
+
+ 

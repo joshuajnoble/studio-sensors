@@ -1,7 +1,7 @@
 
-import time
 from __future__ import division
 import spidev
+import time
 import pigpio
 import urllib2
 
@@ -35,8 +35,7 @@ def read_light():
 
 if __name__ == "__main__":
 
-    io.setup(pir_pin, gpio.IN)         # activate input
-    io.setup(door_pin, io.IN, pull_up_down=gpio.PUD_UP)  # activate input with PullUp
+    pigpio.pi().setup(pir_pin, gpio.IN)         # activate input
 
     # Sensor should be set to Adafruit_DHT.DHT11,
     # Adafruit_DHT22, or Adafruit_AM2302.
