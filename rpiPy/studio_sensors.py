@@ -53,9 +53,9 @@ if __name__ == "__main__":
     	sleep(0.1)
     	
     	if io.input(pir_pin):
-                pir_triggered = true
-            else:
-                pir_triggered = false
+            pir_triggered = true
+        else:
+            pir_triggered = false
 
         if (time.time() - last_send) > 60:
 
@@ -95,7 +95,7 @@ if __name__ == "__main__":
                 print('HTTPException')
             except Exception:
                 import traceback
-                checksLogger.error('generic exception: ' + traceback.format_exc())
+                print('generic exception: ' + traceback.format_exc())
             urllib2.close()
 
             last_send = time.time()
