@@ -5,6 +5,9 @@ import time
 import pigpio
 import urllib2
 
+TSL235_pin = 14
+DHT22_pin = 17
+
 def bitstring(n):
     s = bin(n)[2:]
     return '0'*(8-len(s)) + s
@@ -21,12 +24,13 @@ def readADC(adc_channel=0, spi_channel=0):
     return int(reply, 2) / 2**10
 
 def read_light(pi):
-	NUM_CYCLES = 10
-	start = time.time()
-	for impulse_count in range(NUM_CYCLES):
-	    pi.wait_for_edge(25, pigpio.FALLING_EDGE)
-	duration = time.time() - start      #seconds to run for loop
-	return NUM_CYCLES / duration   #in Hz
+    NUM_CYCLES = 10
+    start = time.time()
+    for impulse_count in range(NUM_CYCLES):
+    	pi.wait_for_edge(TSL235_pin, pigpio.FALLING_EDGE)
+        duration = time.time() - start      #seconds to run for loop
+    
+    return NUM_CYCLES / duration   #in Hz
 
 
 ####################################################################################################
@@ -35,14 +39,13 @@ def read_light(pi):
 
 if __name__ == "__main__":
 
-    pir_pin = 14
+    pir_pin = 18
     pi = pigpio.pi()
     pi.set_mode(pir_pin, pigpio.INPUT)         # activate input
 
     # Sensor should be set to Adafruit_DHT.DHT11,
     # Adafruit_DHT22, or Adafruit_AM2302.
     sensor = Adafruit_DHT.DHT22
-    dht_pin = 23
 
     last_send = time.time()
 
@@ -73,7 +76,7 @@ if __name__ == "__main__":
 
             # Try to grab a sensor reading.  Use the read_retry method which will retry up
             # to 15 times to get a sensor reading (waiting 2 seconds between each retry).
-            humidity, temperature = Adafruit_DHT.read_retry(sensor, pin)
+            humidity, temperature = Adafruit_DHT.read_retry(sensor, DHT22_pin)
 
             # Note that sometimes you won't get a reading and
             # the results will be null (because Linux can't
