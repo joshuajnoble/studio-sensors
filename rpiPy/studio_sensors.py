@@ -5,8 +5,8 @@ import time
 import pigpio
 import urllib2
 
-LIGHT_PIN = 25
-PIR_PIN = 22
+TSL235_pin = 14
+DHT22_pin = 17
 
 def bitstring(n):
     s = bin(n)[2:]
@@ -23,13 +23,15 @@ def readADC(adc_channel=0, spi_channel=0):
     reply = reply_bitstring[5:15]
     return int(reply, 2) / 2**10
 
-def read_light():
-	NUM_CYCLES = 10
-	start = time.time()
-	for impulse_count in range(NUM_CYCLES):
-	    GPIO.wait_for_edge(LIGHT_PIN, GPIO.FALLING)
-	duration = time.time() - start      #seconds to run for loop
-	return NUM_CYCLES / duration   #in Hz
+def read_light(pi):
+    NUM_CYCLES = 10
+    start = time.time()
+    for impulse_count in range(NUM_CYCLES):
+    	pi.wait_for_edge(TSL235_pin, pigpio.FALLING_EDGE)
+        duration = time.time() - start      #seconds to run for loop
+    
+    return NUM_CYCLES / duration   #in Hz
+
 
 
 ####################################################################################################
@@ -38,22 +40,31 @@ def read_light():
 
 if __name__ == "__main__":
 
-    pigpio.pi().setup(PIR_PIN, gpio.IN)         # activate input
+    pir_pin = 18
+    pi = pigpio.pi()
+    pi.set_mode(pir_pin, pigpio.INPUT)         # activate input
 
     # Sensor should be set to Adafruit_DHT.DHT11,
     # Adafruit_DHT22, or Adafruit_AM2302.
     sensor = Adafruit_DHT.DHT22
-    dht_pin = 23
 
     last_send = time.time()
 
+    pir_triggered = false
+
     while 1:
+    	
+    	sleep(0.1)
+    	
+    	if io.input(pir_pin):
+            pir_triggered = true
+        else:
+            pir_triggered = false
 
         if (time.time() - last_send) > 60:
 
             send = ""
-
-            if io.input(pir_pin):
+            if pir_triggered:
                 send += "&m=1"
             else:
                 send += "&m=0"
@@ -66,7 +77,7 @@ if __name__ == "__main__":
 
             # Try to grab a sensor reading.  Use the read_retry method which will retry up
             # to 15 times to get a sensor reading (waiting 2 seconds between each retry).
-            humidity, temperature = Adafruit_DHT.read_retry(sensor, pin)
+            humidity, temperature = Adafruit_DHT.read_retry(sensor, DHT22_pin)
 
             # Note that sometimes you won't get a reading and
             # the results will be null (because Linux can't
@@ -78,8 +89,20 @@ if __name__ == "__main__":
             	humidity, temperature = Adafruit_DHT.read_retry(sensor, pin)
                 send += "&t=" + str(temperature) + "&h=" + str(humidity)
 
-            urllib2.urlopen("http://162.242.237.33")
-            urllib2.close()
+            request = urllib2.Request('162.242.237.33:3000/')
+            try: 
+                response = urllib2.urlopen(request)
+            except urllib2.HTTPError, e:
+                print('HTTPError = ' + str(e.code))
+            except urllib2.URLError, e:
+                print('URLError = ' + str(e.reason))
+            except httplib.HTTPException, e:
+                print('HTTPException')
+            except Exception:
+                import traceback
+                print('generic exception: ' + traceback.format_exc())
 
+            urllib2.close()
             last_send = time.time()
 
+# end
