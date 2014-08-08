@@ -5,6 +5,9 @@ import time
 import pigpio
 import urllib2
 
+LIGHT_PIN = 25
+PIR_PIN = 22
+
 def bitstring(n):
     s = bin(n)[2:]
     return '0'*(8-len(s)) + s
@@ -24,7 +27,7 @@ def read_light():
 	NUM_CYCLES = 10
 	start = time.time()
 	for impulse_count in range(NUM_CYCLES):
-	    GPIO.wait_for_edge(25, GPIO.FALLING)
+	    GPIO.wait_for_edge(LIGHT_PIN, GPIO.FALLING)
 	duration = time.time() - start      #seconds to run for loop
 	return NUM_CYCLES / duration   #in Hz
 
@@ -35,7 +38,7 @@ def read_light():
 
 if __name__ == "__main__":
 
-    pigpio.pi().setup(pir_pin, gpio.IN)         # activate input
+    pigpio.pi().setup(PIR_PIN, gpio.IN)         # activate input
 
     # Sensor should be set to Adafruit_DHT.DHT11,
     # Adafruit_DHT22, or Adafruit_AM2302.
