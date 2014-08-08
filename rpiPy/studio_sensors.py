@@ -20,11 +20,11 @@ def readADC(adc_channel=0, spi_channel=0):
     reply = reply_bitstring[5:15]
     return int(reply, 2) / 2**10
 
-def read_light():
+def read_light(pi):
 	NUM_CYCLES = 10
 	start = time.time()
 	for impulse_count in range(NUM_CYCLES):
-	    GPIO.wait_for_edge(25, GPIO.FALLING)
+	    pi.wait_for_edge(25, pigpio.FALLING_EDGE)
 	duration = time.time() - start      #seconds to run for loop
 	return NUM_CYCLES / duration   #in Hz
 
@@ -35,7 +35,9 @@ def read_light():
 
 if __name__ == "__main__":
 
-    pigpio.pi().setup(pir_pin, gpio.IN)         # activate input
+    pir_pin = 14
+    pi = pigpio.pi()
+    pi.set_mode(pir_pin, pigpio.INPUT)         # activate input
 
     # Sensor should be set to Adafruit_DHT.DHT11,
     # Adafruit_DHT22, or Adafruit_AM2302.
@@ -44,13 +46,21 @@ if __name__ == "__main__":
 
     last_send = time.time()
 
+    pir_triggered = false
+
     while 1:
+    	
+    	sleep(0.1)
+    	
+    	if io.input(pir_pin):
+                pir_triggered = true
+            else:
+                pir_triggered = false
 
         if (time.time() - last_send) > 60:
 
             send = ""
-
-            if io.input(pir_pin):
+            if pir_triggered:
                 send += "&m=1"
             else:
                 send += "&m=0"
@@ -74,8 +84,18 @@ if __name__ == "__main__":
             else:
             	humidity, temperature = Adafruit_DHT.read_retry(sensor, pin)
                 send += "&t=" + str(temperature) + "&h=" + str(humidity)
-
-            urllib2.urlopen("http://example.com/foo/bar")
+            request = urllib2.Request('162.242.237.33:3000/')
+            try: 
+                response = urllib2.urlopen(request)
+            except urllib2.HTTPError, e:
+                print('HTTPError = ' + str(e.code))
+            except urllib2.URLError, e:
+                print('URLError = ' + str(e.reason))
+            except httplib.HTTPException, e:
+                print('HTTPException')
+            except Exception:
+                import traceback
+                checksLogger.error('generic exception: ' + traceback.format_exc())
             urllib2.close()
 
             last_send = time.time()
