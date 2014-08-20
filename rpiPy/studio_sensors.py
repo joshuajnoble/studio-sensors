@@ -25,14 +25,14 @@ def readADC(adc_channel=0, spi_channel=0):
     reply = reply_bitstring[5:15]
     return int(reply, 2) / 2**10
 
-def read_light(pi):
-    NUM_CYCLES = 10
-    start = time.time()
-    for impulse_count in range(NUM_CYCLES):
-    	pi.wait_for_edge(TSL235_pin, pigpio.FALLING_EDGE)
-        duration = time.time() - start      #seconds to run for loop
-    
-    return NUM_CYCLES / duration   #in Hz
+#def read_light(pi):
+#    NUM_CYCLES = 10
+#    start = time.time()
+#    for impulse_count in range(NUM_CYCLES):
+#    	pi.wait_for_edge(TSL235_pin, pigpio.FALLING_EDGE)
+#        duration = time.time() - start      #seconds to run for loop
+#    
+#    return NUM_CYCLES / duration   #in Hz
 
 
 
@@ -71,7 +71,7 @@ if __name__ == "__main__":
             else:
                 send += "&m=0"
 
-            light_value = read_light(pi)
+            light_value = readADC(1) #light is now just on MCP3002, tsl235 can stuff it
             send += "&l=" + str(light_value)
 
             sound_value = readADC()
