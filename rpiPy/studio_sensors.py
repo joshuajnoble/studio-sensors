@@ -4,9 +4,11 @@ import spidev
 import time
 import pigpio
 import urllib2
+import Adafruit_DHT
+import datetime
 
-TSL235_pin = 14
-DHT22_pin = 17
+TSL235_pin = 7
+DHT22_pin = 23
 
 def bitstring(n):
     s = bin(n)[2:]
@@ -50,26 +52,26 @@ if __name__ == "__main__":
 
     last_send = time.time()
 
-    pir_triggered = false
+    pir_triggered = False
 
     while 1:
     	
-    	sleep(0.1)
+    	time.sleep(0.1)
     	
-    	if io.input(pir_pin):
-            pir_triggered = true
+    	if pi.read(pir_pin):
+            pir_triggered = True
         else:
-            pir_triggered = false
+            pir_triggered = False
 
         if (time.time() - last_send) > 60:
 
-            send = ""
+            send = "i=1"
             if pir_triggered:
                 send += "&m=1"
             else:
                 send += "&m=0"
 
-            light_value = read_light()
+            light_value = read_light(pi)
             send += "&l=" + str(light_value)
 
             sound_value = readADC()
@@ -89,7 +91,7 @@ if __name__ == "__main__":
             	humidity, temperature = Adafruit_DHT.read_retry(sensor, pin)
                 send += "&t=" + str(temperature) + "&h=" + str(humidity)
 
-            request = urllib2.Request('162.242.237.33:3000/')
+            request = urllib2.Request('162.242.237.33:3000/?'+send)
             try: 
                 response = urllib2.urlopen(request)
             except urllib2.HTTPError, e:
@@ -101,7 +103,8 @@ if __name__ == "__main__":
             except Exception:
                 import traceback
                 print('generic exception: ' + traceback.format_exc())
-
+            
+            print send
             urllib2.close()
             last_send = time.time()
 
