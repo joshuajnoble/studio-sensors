@@ -10,7 +10,7 @@ int average[64];
 int main()
 {
 
-  int channel = 0;
+  int channel = 1;
 
   config.mode = SPI_MODE_0;
   config.bitsPerWord = 8;
