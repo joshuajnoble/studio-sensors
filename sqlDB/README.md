@@ -22,9 +22,11 @@ Bash into DB:
 [here]: http://docs.docker.io/en/latest/examples/postgresql_service/
 
 
-create DB and table:
+create DB:
 
-create database sensordata;
+`create database sensordata;`
 
-create table readings ( id serial, sensor_id int not null, time timestamp not null, light int not null, sound int not null, movement int not null, temp int not null, humidity int not null, brightness int not null);
+create table:
+
+`create table readings ( id serial, sensor_id int not null, time timestamp not null, light int not null, sound int not null, movement int not null, temp int not null, humidity int not null, brightness int not null);`
 
