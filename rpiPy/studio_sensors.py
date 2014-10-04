@@ -7,9 +7,11 @@ import urllib2
 import Adafruit_DHT
 import datetime
 
+from subprocess import call
+
 TSL235_pin = 7
 DHT22_pin = 23
-
+sensor_id = -1
 def bitstring(n):
     s = bin(n)[2:]
     return '0'*(8-len(s)) + s
@@ -53,6 +55,39 @@ if __name__ == "__main__":
     last_send = time.time()
 
     pir_triggered = False
+    has_id = False
+
+    # maybe this is wonky?
+    while has_id == False:
+
+        request = urllib2.Request('162.242.237.33:3000/get_id')
+        try:
+            response = urllib2.urlopen(request)
+            sensor_id = response
+            has_id = True
+        except urllib2.HTTPError, e:
+            print('HTTPError = ' + str(e.code))
+            call(["ifdown", "wlan0"])
+            sleep(10)
+            call(["ifup", "wlan0"])
+        except urllib2.URLError, e:
+            pcall(["ifdown", "wlan0"])
+            sleep(10)
+            call(["ifup", "wlan0"])
+            print('URLError = ' + str(e.reason))
+        except httplib.HTTPException, e:
+            call(["ifdown", "wlan0"])
+            sleep(10)
+            call(["ifup", "wlan0"])
+            print('HTTPException')
+        except Exception:
+            import traceback
+            print('generic exception: ' + traceback.format_exc())
+        
+        sleep(10)
+        urllib2.close()
+
+    
 
     while 1:
     	
@@ -65,7 +100,7 @@ if __name__ == "__main__":
 
         if (time.time() - last_send) > 60:
 
-            send = "i=1"
+            send = "i=" + str(sensor_id)
             if pir_triggered:
                 send += "&m=1"
             else:
@@ -77,28 +112,33 @@ if __name__ == "__main__":
             sound_value = readADC()
             send += "&s=" + str(sound_value)
 
-            # Try to grab a sensor reading.  Use the read_retry method which will retry up
-            # to 15 times to get a sensor reading (waiting 2 seconds between each retry).
             humidity, temperature = Adafruit_DHT.read_retry(sensor, DHT22_pin)
 
-            # Note that sometimes you won't get a reading and
-            # the results will be null (because Linux can't
-            # guarantee the timing of calls to read the sensor).  
-            # If this happens try again!
             if humidity is not None and temperature is not None:
             	send += "&t=" + str(temperature) + "&h=" + str(humidity)
             else:
             	humidity, temperature = Adafruit_DHT.read_retry(sensor, pin)
                 send += "&t=" + str(temperature) + "&h=" + str(humidity)
 
+            # we're going to want this to allow us to pull this out of the
+            # config file so it can be set from the desktop I'd think
             request = urllib2.Request('162.242.237.33:3000/?'+send)
             try: 
                 response = urllib2.urlopen(request)
             except urllib2.HTTPError, e:
                 print('HTTPError = ' + str(e.code))
+                call(["ifdown", "wlan0"])
+                sleep(10)
+                call(["ifup", "wlan0"])
             except urllib2.URLError, e:
+                pcall(["ifdown", "wlan0"])
+                sleep(10)
+                call(["ifup", "wlan0"])
                 print('URLError = ' + str(e.reason))
             except httplib.HTTPException, e:
+                call(["ifdown", "wlan0"])
+                sleep(10)
+                call(["ifup", "wlan0"])
                 print('HTTPException')
             except Exception:
                 import traceback

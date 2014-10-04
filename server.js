@@ -161,6 +161,21 @@ function handler (req, res) {
       });
     }
   }
+  else if( uri == "/get_id" ) // first thing is to get an ID to use, this lets you know what ID this device is
+  {
+    var query = "SELECT sensor_id FROM readings ORDER BY sensor_id DESC LIMIT 1;";
+    client.query(query, function( err, result ) {
+       if(err) {
+         return console.log(" error " + err );
+       }
+       if( result )
+       {
+            res.writeHead(200, {'Content-Type': 'text/plain'});
+            var id = result.rows[0];
+            res.write( stringify(id+1) ); // everybody gets a new ID
+        }
+    }
+  }
   else if( uri == "/test")
   {
     var q = querystring.parse(url.parse(req.url).query);
