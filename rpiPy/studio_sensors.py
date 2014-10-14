@@ -71,7 +71,7 @@ if __name__ == "__main__":
             sleep(10)
             call(["ifup", "wlan0"])
         except urllib2.URLError, e:
-            pcall(["ifdown", "wlan0"])
+            call(["ifdown", "wlan0"])
             sleep(10)
             call(["ifup", "wlan0"])
             print('URLError = ' + str(e.reason))
