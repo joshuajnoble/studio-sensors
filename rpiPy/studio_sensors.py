@@ -2,10 +2,12 @@
 from __future__ import division
 import spidev
 import time
+from time import sleep
 import pigpio
 import urllib2
 import Adafruit_DHT
 import datetime
+import os
 
 from subprocess import call
 
@@ -57,41 +59,49 @@ if __name__ == "__main__":
     pir_triggered = False
     has_id = False
 
-    # maybe this is wonky?
-    while has_id == False:
-
-        request = urllib2.Request('162.242.237.33:3000/get_id')
-        try:
-            response = urllib2.urlopen(request)
-            sensor_id = response
-            has_id = True
-        except urllib2.HTTPError, e:
-            print('HTTPError = ' + str(e.code))
-            call(["ifdown", "wlan0"])
-            sleep(10)
-            call(["ifup", "wlan0"])
-        except urllib2.URLError, e:
-            call(["ifdown", "wlan0"])
-            sleep(10)
-            call(["ifup", "wlan0"])
-            print('URLError = ' + str(e.reason))
-        except httplib.HTTPException, e:
-            call(["ifdown", "wlan0"])
-            sleep(10)
-            call(["ifup", "wlan0"])
-            print('HTTPException')
-        except Exception:
-            import traceback
-            print('generic exception: ' + traceback.format_exc())
+	# if you have an ID file then you don't need to do this
         
-        sleep(10)
-        urllib2.close()
+    if os.path.isfile('studio_sensor_id') == False:
+		# maybe this is wonky?
+		while has_id == False:
+			request = urllib2.Request('http://162.242.237.33:3000/get_id')
+			try:
+				response = urllib2.urlopen(request)
+				sensor_id = response.read()
+				print(" got ID " + str(sensor_id))
+				f = open('studio_sensor_id', 'w')
+				f.write(str(sensor_id))
+				f.close()
+				has_id = True
+			except urllib2.HTTPError, e:
+				 print('HTTPError = ' + str(e.code))
+				 call(["ifdown", "wlan0"])
+				 sleep(10)
+				 call(["ifup", "wlan0"])
+			except urllib2.URLError, e:
+				 call(["ifdown", "wlan0"])
+				 sleep(10)
+				 call(["ifup", "wlan0"])
+				 print('URLError = ' + str(e.reason))
+#			except urllib2.HTTPException, e:
+#				 call(["ifdown", "wlan0"])
+#				 sleep(10)
+#				 call(["ifup", "wlan0"])
+#				 print('HTTPException')
+			except Exception:
+				 import traceback
+				 print('generic exception: ' + traceback.format_exc())
+				
+			sleep(10)
 
-    
+    if os.path.isfile('studo_sensor_id') == True:
+        f = open('studio_sensor_id', 'r')
+        sensor_id = f.read()        
+        f.close()    
 
     while 1:
     	
-    	time.sleep(0.1)
+    	sleep(0.1)
     	
     	if pi.read(pir_pin):
             pir_triggered = True
@@ -117,12 +127,12 @@ if __name__ == "__main__":
             if humidity is not None and temperature is not None:
             	send += "&t=" + str(temperature) + "&h=" + str(humidity)
             else:
-            	humidity, temperature = Adafruit_DHT.read_retry(sensor, pin)
+            	humidity, temperature = Adafruit_DHT.read_retry(sensor, DHT22_pin)
                 send += "&t=" + str(temperature) + "&h=" + str(humidity)
 
             # we're going to want this to allow us to pull this out of the
             # config file so it can be set from the desktop I'd think
-            request = urllib2.Request('162.242.237.33:3000/?'+send)
+            request = urllib2.Request('http://162.242.237.33:3000/?'+send)
             try: 
                 response = urllib2.urlopen(request)
             except urllib2.HTTPError, e:
@@ -130,20 +140,27 @@ if __name__ == "__main__":
                 call(["ifdown", "wlan0"])
                 sleep(10)
                 call(["ifup", "wlan0"])
+                print( " http error " )
             except urllib2.URLError, e:
-                pcall(["ifdown", "wlan0"])
-                sleep(10)
-                call(["ifup", "wlan0"])
-                print('URLError = ' + str(e.reason))
-            except httplib.HTTPException, e:
                 call(["ifdown", "wlan0"])
                 sleep(10)
                 call(["ifup", "wlan0"])
-                print('HTTPException')
+                print('URLError = ' + str(e.reason))
+#            except httplib.HTTPException, e:
+#                call(["ifdown", "wlan0"])
+#                sleep(10)
+#                call(["ifup", "wlan0"])
+#                print('HTTPException')
             except Exception:
-                import traceback
-                print('generic exception: ' + traceback.format_exc())
-            
+				import traceback
+				print('generic exception: ' + traceback.format_exc())
+				call(["ifdown", "wlan0"])
+				sleep(10)
+				call(["ifup", "wlan0"])
+				print( " http error " )
+
+
+ 
             print send
             urllib2.close()
             last_send = time.time()
