@@ -12,7 +12,7 @@ import os
 from subprocess import call
 
 TSL235_pin = 7
-DHT22_pin = 23
+DHT22_pin = 17
 sensor_id = -1
 def bitstring(n):
     s = bin(n)[2:]
