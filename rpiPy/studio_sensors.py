@@ -100,7 +100,7 @@ if __name__ == "__main__":
 		sensor_id = f.read()        
 		f.close()    
 
-	sound_values = [0] * 13
+	sound_values = [0] * 150
 	sound_index = 0
 
 	while 1:
@@ -116,7 +116,7 @@ if __name__ == "__main__":
 			last_sound_sample = time.time()
 
 
-		if (time.time() - last_send) > 60:
+		if (time.time() - last_send) > 600:
 			print( " sending ")
 			send = "i=" + str(sensor_id)
 			if pir_triggered:
