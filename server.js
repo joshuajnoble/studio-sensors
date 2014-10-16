@@ -54,8 +54,8 @@ function handler (req, res) {
     {
       console.log(q);
       var query = "INSERT INTO readings (sensor_id, time, light, sound, temp, movement, humidity, brightness) VALUES (" + 
-        parseInt(q.i,16) + ",current_timestamp," + parseInt(q.l,16) + "," + parseInt(q.s,16) + "," + parseInt(q.t,16) + "," + 
-        parseInt(q.m,16) + "," + parseInt(q.h,16) +",0);";
+        parseInt(q.i,10) + ",current_timestamp," + parseInt(q.l,10) + "," + parseInt(q.s,10) + "," + parseInt(q.t,10) + "," + 
+        parseInt(q.m,10) + "," + parseInt(q.h,10) +",0);";
 
      console.log(query);
      client.query(query,  function(err, result) {
@@ -172,9 +172,13 @@ function handler (req, res) {
        {
             res.writeHead(200, {'Content-Type': 'text/plain'});
             var id = result.rows[0];
-            res.write( stringify(id+1) ); // everybody gets a new ID
+	    console.log(" returning id " + id );
+	    console.log( result );
+	    var json = JSON.stringify(id);
+            res.write( (id.sensor_id + 1).toString()); // everybody gets a new ID
+	    return res.end();
         }
-    }
+    });
   }
   else if( uri == "/test")
   {
