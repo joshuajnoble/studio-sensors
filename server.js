@@ -92,7 +92,7 @@ function handler (req, res) {
         }
       });
     }
-    if(q && q.zone) 
+    if(q && q.zone && !q.last) 
     {
       var query = "select * from readings where sensor_id = "+q.zone;
       client.query(query,  function(err, result) {
