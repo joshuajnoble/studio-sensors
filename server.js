@@ -238,11 +238,20 @@ function handler (req, res) {
          if( result )
          {
             res.writeHead(200, {'Content-Type': 'text/plain'});
-            var id = result.rows[0];
-            console.log(" returning id " + id );
-            console.log( result );
-            var json = JSON.stringify(id);
-            res.write( (id.zone + 1).toString()); // everybody gets a new ID
+            var id = 1; // are you the first?
+            if( result.rowCount > 0 )
+            {
+              id = result.rows[0];
+              console.log(" returning id " + id );
+              console.log( result );
+              var json = JSON.stringify(id);
+              res.write( (id.zone + 1).toString()); // everybody gets a new ID
+            }
+            else
+            {
+              var json = JSON.stringify(id);
+              res.write(1).toString()); // everybody gets a new ID
+            }
             //now actually write the record
             var updateQuery = "INSERT INTO sensors(id, studio, zone, ip) "+id+""+q.studio+""+q.zone+""+q.ip+";";
             client.query(updateQuery, function( err2, result2 )
