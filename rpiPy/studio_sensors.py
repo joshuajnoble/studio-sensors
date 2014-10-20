@@ -8,7 +8,9 @@ import urllib2
 import Adafruit_DHT
 import datetime
 import os
+import contextlib
 
+import subprocess
 from subprocess import call
 
 TSL235_pin = 7
@@ -29,6 +31,7 @@ def readADC(adc_channel=0, spi_channel=0):
 	reply_bytes = conn.xfer2([cmd, 0])
 	reply_bitstring = ''.join(bitstring(n) for n in reply_bytes)
 	reply = reply_bitstring[5:15]
+	conn.close()
 	return int(reply, 2)
 
 
@@ -73,21 +76,22 @@ if __name__ == "__main__":
 				f = open('studio_sensor_id', 'w')
 				f.write(str(sensor_id))
 				f.close()
+				response.close()
 				has_id = True
 			except urllib2.HTTPError, e:
 				 print('HTTPError = ' + str(e.code))
-				 call(["ifdown", "wlan0"])
+				 subprocess.Popen(["ifdown", "wlan0"],close_fds=True)
 				 sleep(10)
-				 call(["ifup", "wlan0"])
+				 subprocess.Popen(["ifup", "wlan0"],close_fds=True)
 			except urllib2.URLError, e:
-				 call(["ifdown", "wlan0"])
+				 subprocess.Popen(["ifdown", "wlan0"],close_fds=True)
 				 sleep(10)
-				 call(["ifup", "wlan0"])
+				 subprocess.Popen(["ifup", "wlan0"],close_fds=True)
 				 print('URLError = ' + str(e.reason))
 			except urllib2.HTTPException, e:
-				 call(["ifdown", "wlan0"])
+				 subprocess.Popen(["ifdown", "wlan0"],close_fds=True)
 				 sleep(10)
-				 call(["ifup", "wlan0"])
+				 subprocess.Popen(["ifup", "wlan0"],close_fds=True)
 				 print('HTTPException')
 			except Exception:
 				 import traceback
@@ -116,7 +120,7 @@ if __name__ == "__main__":
 			last_sound_sample = time.time()
 
 
-		if (time.time() - last_send) > 600:
+		if (time.time() - last_send) > 10:
 			print( " sending ")
 			send = "i=" + str(sensor_id)
 			if pir_triggered:
@@ -127,15 +131,23 @@ if __name__ == "__main__":
 			send += "&l=" + str(light_value)
 			
 			sound_sum = 0
-			for val in sound_values:
-				sound_sum += val
+			for val in range(sound_index):
+				sound_sum += abs( 512 - sound_values[val] )
 
 			send += "&s=" + str(sound_sum / sound_index)
 			# all done with sounds until next send
 			sound_index = 0
 			humidity, temperature = Adafruit_DHT.read_retry(sensor, DHT22_pin)
 			print( str(temperature) + " " + str(humidity))
-			send += "&t=" + str(temperature) + "&h=" + str(humidity)
+			if temperature != None:
+				send += "&t=" + str(int(temperature))
+			else:
+				send += "&t=0"
+
+			if humidity != None:
+				send += "&h=" + str(int(humidity))
+			else:
+				send += "&h=0"
 
 			print( send )
 
@@ -144,28 +156,33 @@ if __name__ == "__main__":
 			request = urllib2.Request('http://162.242.237.33:3000/?'+send)
 			try: 
 				response = urllib2.urlopen(request)
+				response.close()
 			except urllib2.HTTPError, e:
+				response.close()
 				print('HTTPError = ' + str(e.code))
-				call(["ifdown", "wlan0"])
+				subprocess.Popen(["ifdown", "wlan0"],close_fds=True)
 				sleep(10)
-				call(["ifup", "wlan0"])
+				subprocess.Popen(["ifup", "wlan0"],close_fds=True)
 				print( " http error " )
 			except urllib2.URLError, e:
-				call(["ifdown", "wlan0"])
+				response.close()
+				subprocess.Popen(["ifdown", "wlan0"],close_fds=True)
 				sleep(10)
-				call(["ifup", "wlan0"])
+				subprocess.Popen(["ifup", "wlan0"],close_fds=True)
 				print('URLError = ' + str(e.reason))
-			except urllib2.HTTPException, e:
-				call(["ifdown", "wlan0"])
-				sleep(10)
-				call(["ifup", "wlan0"])
-				print('HTTPException')
+#			except urllib2.HTTPException, e:
+#				response.close()
+#				subprocess.Popen(["ifdown", "wlan0"],close_fds=True)
+#				sleep(10)
+#				subprocess.Popen(["ifup", "wlan0"],close_fds=True)
+#				print('HTTPException')
 			except Exception:
+				response.close()
 				import traceback
 				print('generic exception: ' + traceback.format_exc())
-				call(["ifdown", "wlan0"])
+				subprocess.Popen(["ifdown", "wlan0"],close_fds=True)
 				sleep(10)
-				call(["ifup", "wlan0"])
+				subprocess.Popen(["ifup", "wlan0"],close_fds=True)
 				print( " http error " )
 
 			last_send = time.time()
