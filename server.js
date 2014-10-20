@@ -109,6 +109,23 @@ function handler (req, res) {
         }
       });
     }
+    if(q && q.zone && q.last) 
+    {
+      var query = "select * from readings where sensor_id = "+q.zone + " order by time desc limit 1";
+      client.query(query,  function(err, result) {
+        if(err){
+          console.log(" error " + err);
+          res.writeHead(200, {'Content-Type': 'text/plain'});
+          res.write(" error " + err);
+          return res.end();
+        }
+        if(result) {
+          var json = JSON.stringify(result.rows);
+          res.writeHead(200, {'content-type':'application/json', 'content-length':json.length}); 
+          res.end(json);
+        }
+      });
+    }
     if(q && q.recent)
     {
 	      var query = "select * from readings where sensor_id = "+q.recent+" and time > (now() - interval '1 hour');"
