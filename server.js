@@ -238,27 +238,27 @@ function handler (req, res) {
          if( result )
          {
             res.writeHead(200, {'Content-Type': 'text/plain'});
-            var id = 1; // are you the first?
+            var id = 0; // are you the first?
             if( result.rowCount > 0 )
             {
-              id = result.rows[0];
+              id = result.rows[0].id;
               console.log(" returning id " + id );
               console.log( result );
               var json = JSON.stringify(id);
-              res.write( (id.zone + 1).toString()); // everybody gets a new ID
+              res.write( (id + 1).toString()); // everybody gets a new ID
             }
             else
             {
               var json = JSON.stringify(id);
-              res.write(1).toString()); // everybody gets a new ID
+              res.write(id.toString()); // everybody gets a new ID
             }
             //now actually write the record
-            var updateQuery = "INSERT INTO sensors(id, studio, zone, ip) "+id+""+q.studio+""+q.zone+""+q.ip+";";
+            var updateQuery = "INSERT INTO sensors(id, studio, zone, ip) VALUES ( "+parseInt(id+1, 10)+",'"+q.studio+"','"+q.zone+"','"+q.ip+"');";
             client.query(updateQuery, function( err2, result2 )
             {
                if(err2)
                {
-                  console.log(" error " + err );
+                  console.log(" error on update query " + err2 );
                   res.writeHead(409, {'Content-Type': 'text/plain'});
                   res.write(" DB error on updateQuery ");
                   return res.end();
