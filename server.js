@@ -165,7 +165,7 @@ function handler (req, res) {
           }
         });
       }
-      if(q && q.studio && )
+      if(q && q.studio && q.begindate && q.begintime)
       {
           var query = "select * from readings where studio = " + q.studio + 
             " AND BETWEEN to_timestamp('"+q.begindate+ " " + q.begintime +"', 'DDMMYYYY HH24MI') AND to_timestamp('"+
