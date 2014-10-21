@@ -45,3 +45,10 @@ make
 make install
 
  
+
+There are two variables that need to be set in the start.sh script:
+
+STUDIO=SEA
+ZONE=0
+
+THESE NEED TO BE SET! Set them to the 3 digit airport code of your studio and to what zone you want it to represent.
