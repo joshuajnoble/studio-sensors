@@ -250,15 +250,15 @@ function handler (req, res) {
             else
             {
               var json = JSON.stringify(id);
-              res.write(1).toString()); // everybody gets a new ID
+              res.write(1.toString()); // everybody gets a new ID
             }
             //now actually write the record
-            var updateQuery = "INSERT INTO sensors(id, studio, zone, ip) "+id+""+q.studio+""+q.zone+""+q.ip+";";
+            var updateQuery = "INSERT INTO sensors(id, studio, zone, ip) VALUES ("+id+""+q.studio+""+q.zone+""+q.ip+");";
             client.query(updateQuery, function( err2, result2 )
             {
                if(err2)
                {
-                  console.log(" error " + err );
+                  console.log(" error2 " + err );
                   res.writeHead(409, {'Content-Type': 'text/plain'});
                   res.write(" DB error on updateQuery ");
                   return res.end();
