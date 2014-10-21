@@ -1,7 +1,11 @@
-
 from __future__ import division
+import struct
+import socket
+import fcntl
+import getopt
 import spidev
 import time
+import sys
 from time import sleep
 import pigpio
 import urllib2
@@ -50,21 +54,22 @@ def rebootWlan0():
 	subprocess.Popen(["ifdown", "wlan0"],close_fds=True)
 	sleep(10)
 	subprocess.Popen(["ifup", "wlan0"],close_fds=True)
+	sleep(20)
 	ip = get_ip_address('wlan0')
 	request = urllib2.Request('http://162.242.237.33:3000/update_ip?id='+sensor_id+'&ip=' + ip)
 	# recursively calls itself, could be bad
 	try:
 		response = urllib2.urlopen(request)
 	except urllib2.HTTPError, e:
-		response.close()
+		#response.close()
 		print('HTTPError = ' + str(e.code))
 		rebootWlan0()
 	except urllib2.URLError, e:
-		response.close()
+		#response.close()
 		rebootWlan0()
 		print('URLError = ' + str(e.reason))
 	except Exception:
-		response.close()
+		#response.close()
 		import traceback
 		print('generic exception: ' + traceback.format_exc())
 		rebootWlan0()
@@ -79,7 +84,7 @@ def rebootWlan0():
 if __name__ == "__main__":
 
 	# Read command line args
-	myopts, args = getopt.getopt(sys.argv[1:],"i:o:")
+	myopts, args = getopt.getopt(sys.argv[1:],"s:z:")
  
 	###############################
 	# o == option
@@ -101,8 +106,6 @@ if __name__ == "__main__":
 
 	sensor = Adafruit_DHT.DHT22
 
-	last_send = time.time()
-	last_sound_sample = last_send
 	pir_triggered = False
 	has_id = False
 
@@ -151,9 +154,11 @@ if __name__ == "__main__":
 
 	sound_values = [0] * 150
 	sound_index = 0
+	last_send = time.time()
+	last_sound_sample = last_send
 
 	while 1:
-		sleep(0.1)
+		sleep(0.05)
 		if pi.read(pir_pin) == False:
 			pir_triggered = True
 		else:
@@ -203,15 +208,18 @@ if __name__ == "__main__":
 				response = urllib2.urlopen(request)
 				response.close()
 			except urllib2.HTTPError, e:
-				response.close()
-				print('HTTPError = ' + str(e.code))
-				rebootWlan0()
+				#response.close()
+				print(" HTTP ERROR = " + str(e.code))
+				if( e.code == 409 ):
+					print(" We're getting a 409 which means a misconfigured request and resulting DB error ")
+				else:
+					rebootWlan0()
 			except urllib2.URLError, e:
-				response.close()
+				#response.close()
 				rebootWlan0()
 				print('URLError = ' + str(e.reason))
 			except Exception:
-				response.close()
+				#response.close()
 				import traceback
 				print('generic exception: ' + traceback.format_exc())
 				rebootWlan0()

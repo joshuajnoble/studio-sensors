@@ -1,5 +1,4 @@
 #!/bin/bash
-
 sudo modprobe spi_bcm2708
 sudo pigpiod
 
