@@ -13,6 +13,9 @@ import contextlib
 import subprocess
 from subprocess import call
 
+zone = ""
+studio = ""
+
 TSL235_pin = 7
 DHT22_pin = 17
 sensor_id = -1
@@ -34,23 +37,63 @@ def readADC(adc_channel=0, spi_channel=0):
 	conn.close()
 	return int(reply, 2)
 
+def get_ip_address(ifname):
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    return socket.inet_ntoa(fcntl.ioctl(
+        s.fileno(),
+        0x8915,  # SIOCGIFADDR
+        struct.pack('256s', ifname[:15])
+    )[20:24])
 
-#def readADC(adc_channel=0, spi_channel=0):
-#    conn = spidev.SpiDev(0, spi_channel)
-#    conn.max_speed_hz = 1200000 # 1.2 MHz
-#    cmd = 128
-#    if adc_channel:
-#        cmd += 32
-#    reply_bytes = conn.xfer2([cmd, 0])
-#    reply_bitstring = ''.join(bitstring(n) for n in reply_bytes)
-#    reply = reply_bitstring[5:15]
-#    return int(reply, 2) / 2**10
+
+def rebootWlan0():
+	subprocess.Popen(["ifdown", "wlan0"],close_fds=True)
+	sleep(10)
+	subprocess.Popen(["ifup", "wlan0"],close_fds=True)
+	ip = get_ip_address('wlan0')
+	request = urllib2.Request('http://162.242.237.33:3000/update_ip?id='+sensor_id+'&ip=' + ip)
+	# recursively calls itself, could be bad
+	try:
+		response = urllib2.urlopen(request)
+	except urllib2.HTTPError, e:
+		response.close()
+		print('HTTPError = ' + str(e.code))
+		rebootWlan0()
+	except urllib2.URLError, e:
+		response.close()
+		rebootWlan0()
+		print('URLError = ' + str(e.reason))
+	except Exception:
+		response.close()
+		import traceback
+		print('generic exception: ' + traceback.format_exc())
+		rebootWlan0()
+		print( " http error " )
+
+
 
 ####################################################################################################
 # now begin the actual loop
 ####################################################################################################
 
 if __name__ == "__main__":
+
+	# Read command line args
+	myopts, args = getopt.getopt(sys.argv[1:],"i:o:")
+ 
+	###############################
+	# o == option
+	# a == argument passed to the o
+	###############################
+	for o, a in myopts:
+		if o == '-s':
+			studio=a
+		elif o == '-z':
+			zone=a
+		else:
+			print("Usage: %s -s studio -z zone" % sys.argv[0])
+
+	print (studio + " " + zone)
 
 	pir_pin = 18
 	pi = pigpio.pi()
@@ -66,9 +109,11 @@ if __name__ == "__main__":
 	# if you have an ID file then you don't need to do this
 
 	if os.path.isfile('studio_sensor_id') == False:
-		# maybe this is wonky?
+
+		ip = get_ip_address('wlan0')
+		
 		while has_id == False:
-			request = urllib2.Request('http://162.242.237.33:3000/get_id')
+			request = urllib2.Request('http://162.242.237.33:3000/get_id?studio='+studio+'&zone='+zone+'&ip='+ip)
 			try:
 				response = urllib2.urlopen(request)
 				sensor_id = response.read()
@@ -119,10 +164,10 @@ if __name__ == "__main__":
 			sound_index += 1
 			last_sound_sample = time.time()
 
-
-		if (time.time() - last_send) > 10:
+		# every 5 minutes?
+		if (time.time() - last_send) > 300:
 			print( " sending ")
-			send = "i=" + str(sensor_id)
+			send = "i=" + str(sensor_id) + "&studio="+ studio+ "&zone="+ zone
 			if pir_triggered:
 				send += "&m=1"
 			else:
@@ -160,29 +205,16 @@ if __name__ == "__main__":
 			except urllib2.HTTPError, e:
 				response.close()
 				print('HTTPError = ' + str(e.code))
-				subprocess.Popen(["ifdown", "wlan0"],close_fds=True)
-				sleep(10)
-				subprocess.Popen(["ifup", "wlan0"],close_fds=True)
-				print( " http error " )
+				rebootWlan0()
 			except urllib2.URLError, e:
 				response.close()
-				subprocess.Popen(["ifdown", "wlan0"],close_fds=True)
-				sleep(10)
-				subprocess.Popen(["ifup", "wlan0"],close_fds=True)
+				rebootWlan0()
 				print('URLError = ' + str(e.reason))
-#			except urllib2.HTTPException, e:
-#				response.close()
-#				subprocess.Popen(["ifdown", "wlan0"],close_fds=True)
-#				sleep(10)
-#				subprocess.Popen(["ifup", "wlan0"],close_fds=True)
-#				print('HTTPException')
 			except Exception:
 				response.close()
 				import traceback
 				print('generic exception: ' + traceback.format_exc())
-				subprocess.Popen(["ifdown", "wlan0"],close_fds=True)
-				sleep(10)
-				subprocess.Popen(["ifup", "wlan0"],close_fds=True)
+				rebootWlan0()
 				print( " http error " )
 
 			last_send = time.time()
