@@ -19,8 +19,10 @@ http://162.242.237.33:3000/view?zone=1
 
 Here's what it looks like:
 
+```
 [{"id":134,"sensor_id":1,"time":"2014-03-24T23:48:55.442Z","light":1,"sound":114,"movement":1,"temp":18,"humidity":147,"brightness":0},
 {"id":135,"sensor_id":1,"time":"2014-03-24T23:49:20.120Z","light":1347,"sound":562,"movement":0,"temp":34,"humidity":3,"brightness":0}]
+```
 
 Whoa. That's JSON! That's right, JSON! Holy Shit!
 
