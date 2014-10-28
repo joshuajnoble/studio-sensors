@@ -1,53 +1,100 @@
 
-========================================================================================================================================
-=========================================================================================================================================
-==========================================================================================================================================
+frog studio sensor
 
-seattle studio sensor scheme: SS|SS
+================================================================================
 
-==========================================================================================================================================
-=========================================================================================================================================
-========================================================================================================================================
-
-It is at present living here: 
-
-http://162.242.237.33:3000/view?begindate=24032014&begintime=1600&enddate=24032014&endtime=1700
-
-That's how you pull dates. This is how you pull zones:
-
-http://162.242.237.33:3000/view?zone=1
-
-Here's what it looks like:
+Let's keep it simple at first: there's a server and you can pull info from it. Here's what some of that info looks like:
 
 ```
 [{"id":134,"sensor_id":1,"time":"2014-03-24T23:48:55.442Z","light":1,"sound":114,"movement":1,"temp":18,"humidity":147,"brightness":0},
 {"id":135,"sensor_id":1,"time":"2014-03-24T23:49:20.120Z","light":1347,"sound":562,"movement":0,"temp":34,"humidity":3,"brightness":0}]
 ```
 
-Whoa. That's JSON! That's right, JSON! Holy Shit!
+Whoa. That's JSON!
 
 The frog studio sensors log all their data up there to my server every 15 seconds. 
 
 Ok, so we have a few things in there:
 
-sensor_id: what sensor is it?
-studio: what studio is it in?
-zone: what part of the studio is it in?
-time: that's a timestamp (ignore the Z, it just means it's using the current timezone, which, yeah, it is)
-sound: scale from 50 - 400 (afaict)
-movement: has anything moved in that zone in the last 30 seconds?
-humidity: what's the relative humidity (percent)
-temperature: Celsius
-light: light frequency in values from 100-2000 with the relative color temperature of the light sensor
-brightness: not being used right now
+* sensor_id: what sensor is it?
+* studio: what studio is it in?
+* zone: what part of the studio is it in?
+* time: that's a timestamp (ignore the Z, it just means it's using the current timezone, which, yeah, it is)
+* sound: scale from 50 - 400 (afaict)
+* movement: has anything moved in that zone in the last 30 seconds?
+* humidity: what's the relative humidity (percent)
+* temperature: Celsius
+* light: light frequency in values from 100-2000 with the relative color temperature of the light sensor
+* brightness: not being used right now
 
 The raspberry pi just logs its data using a URL like:
 
-http://OUR_URL:3000/?i=1&l=343&s=232&t=22&h=33&m=0&&studio=sea&zone=1
+`http://OUR_URL:3000/?i=1&l=343&s=232&t=22&h=33&m=0&&studio=sea&zone=1`
 
-we're trying to keep the URL as short and simple as possible so that we can save space on the Arduino because it hardly has any memory.
+You can make fake (test) posts all you want.
 
-Everything is in git but at present or until someone can figure out how the local server stuff is supposed to work, this badboy is staying simple and living on my server.
+===============================================
+VISUALIZATION
+===============================================
+
+Where's the visualization? Good question. Have you made one yet? No? Well there's your answer. This is meant to look different to each studio. There are a few basic pattern goes like so:
+
+`/view?params`
+
+Let's look at some more stuff in here. You're *probably* going to want to just use the following:
+
+`URL:3000/view?studio=SEA&begindate=24032014&begintime=1600&enddate=24032014&endtime=1700`
+
+That gives you all the data from Seattle from 24032014:1600 to 24032014:1700 thats DDMMYY:24HR
+
+There is more though, be warned though, these datasets can get massive and pulling them all is *slow*
+
+All studios by date:
+
+`URL:3000/view?begindate=24032014&begintime=1600&enddate=24032014&endtime=1700`
+
+The last reading by zone
+
+`URL:3000/view?zone=1&last=1`
+
+All readings by zone
+
+`URL:3000/view?zone=1`
+
+All readings by sensorid (good for debugging)
+
+`URL:3000/view?id=1`
+
+All readings from the last hour
+
+`URL:3000/view?recent=1`
+
+The last reading of a zone
+
+`URL:3000/view?last=1`
+
+Here's what it looks like:
+
+`URL:3000/?i=1&l=343&s=232&t=22&h=33&m=0&&studio=sea&zone=1`
+
+
+===============================================
+DEVICE INFO
+===============================================
+
+The device is a Raspberry pi with some sensors on it. The first thing the device does is start up, report its IP, studio (within frog), location (zone), and then get a sensor id that will follow it as long as it (it, in this case being the SD card) exists.
+
+This is accessed like so:
+
+`$URL/get_id?studio=SEA&zone=1&ip=172.189.128.112`
+
+When the machine is kicked off the network and hops back on that it updates its IP. This is done like so:
+
+`$URL/update_id?id=1&ip=172.189.128.112`
+
+The id you see there is the same ID that is retrieved when the machine is first started up. 
+
+Why is this "id => IP" mapping important? Well, so that you can always SSH into your device and see what's up with it, if it crashed, if the DHT22 burnt out, etc. That's what makes it worthwhile to have everything on the RPI.
 
 ===============================================
 SERVER INFO
@@ -83,6 +130,38 @@ psql (9.3.5)
 Type "help" for help.
 
 ALTER USER postgres WITH PASSWORD '$password';
+```
+
+Create a job:
+
+`sudo vim /etc/init/studioapi.conf`
+
+then add:
+
+```
+description "node.js server"
+author     "josh"
+
+# used to be: start on startup
+# until we found some mounts weren't ready yet while booting:
+start on started mountall
+stop on shutdown
+
+# Automatically Respawn:
+respawn
+respawn limit 99 5
+
+script
+    # Not sure why $HOME is needed, but we found that it is:
+    export HOME="/root"
+
+    exec /usr/bin/node /home/joshuajnoble/studio-sensors/server.js >> /var/log/node.log 2>&1
+end script
+
+post-start script
+   # Optionally put a script here that will notifiy you node has (re)started
+   # /root/bin/hoptoad.sh "node.js has started!"
+end script
 ```
 
 ===============================================
