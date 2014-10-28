@@ -3,22 +3,14 @@ frog studio sensor
 
 ================================================================================
 
-It is at present living here: 
-
-http://162.242.237.33:3000/view?begindate=24032014&begintime=1600&enddate=24032014&endtime=1700
-
-That's how you pull dates. This is how you pull zones:
-
-http://162.242.237.33:3000/view?zone=1
-
-Here's what it looks like:
+Let's keep it simple at first: there's a server and you can pull info from it. Here's what some of that info looks like:
 
 ```
 [{"id":134,"sensor_id":1,"time":"2014-03-24T23:48:55.442Z","light":1,"sound":114,"movement":1,"temp":18,"humidity":147,"brightness":0},
 {"id":135,"sensor_id":1,"time":"2014-03-24T23:49:20.120Z","light":1347,"sound":562,"movement":0,"temp":34,"humidity":3,"brightness":0}]
 ```
 
-Whoa. That's JSON! That's right, JSON! Holy Shit!
+Whoa. That's JSON!
 
 The frog studio sensors log all their data up there to my server every 15 seconds. 
 
@@ -37,11 +29,54 @@ brightness: not being used right now
 
 The raspberry pi just logs its data using a URL like:
 
-http://OUR_URL:3000/?i=1&l=343&s=232&t=22&h=33&m=0&&studio=sea&zone=1
+`http://OUR_URL:3000/?i=1&l=343&s=232&t=22&h=33&m=0&&studio=sea&zone=1`
 
-we're trying to keep the URL as short and simple as possible so that we can save space on the Arduino because it hardly has any memory.
+You can make fake (test) posts all you want.
 
-Everything is in git but at present or until someone can figure out how the local server stuff is supposed to work, this badboy is staying simple and living on my server.
+===============================================
+VISUALIZATION
+===============================================
+
+Where's the visualization? Good question. Have you made one yet? No? Well there's your answer. This is meant to look different to each studio. There are a few basic pattern goes like so:
+
+`/view?params`
+
+Let's look at some more stuff in here. You're *probably* going to want to just use the following:
+
+`URL:3000/view?studio=SEA&begindate=24032014&begintime=1600&enddate=24032014&endtime=1700`
+
+That gives you all the data from Seattle from 24032014:1600 to 24032014:1700 thats DDMMYY:24HR
+
+There is more though, be warned though, these datasets can get massive and pulling them all is *slow*
+
+All studios by date:
+
+`URL:3000/view?begindate=24032014&begintime=1600&enddate=24032014&endtime=1700`
+
+The last reading by zone
+
+`URL:3000/view?zone=1&last=1`
+
+All readings by zone
+
+`URL:3000/view?zone=1`
+
+All readings by sensorid (good for debugging)
+
+`URL:3000/view?id=1`
+
+All readings from the last hour
+
+`URL:3000/view?recent=1`
+
+The last reading of a zone
+
+`URL:3000/view?last=1`
+
+Here's what it looks like:
+
+`URL:3000/?i=1&l=343&s=232&t=22&h=33&m=0&&studio=sea&zone=1`
+
 
 ===============================================
 DEVICE INFO
