@@ -55,28 +55,29 @@ All studios by date:
 
 The last reading by zone
 
-`URL:3000/view?zone=1&last=1`
+`URL:3000/view?studio=SEA&zone=1&last=1`
 
 All readings by zone
 
-`URL:3000/view?zone=1`
+`URL:3000/view?studio=SEA&zone=1`
 
 All readings by sensorid (good for debugging)
 
 `URL:3000/view?id=1`
 
-All readings from the last hour
-
-`URL:3000/view?recent=1`
-
-The last reading of a zone
-
-`URL:3000/view?last=1`
-
-Here's what it looks like:
+Timeboxed view of a particular zone:
 
 `URL:3000/?i=1&l=343&s=232&t=22&h=33&m=0&&studio=sea&zone=1`
 
+All readings from the last hour
+
+`URL:3000/view?recent=1&zone=1&studio=SEA`
+
+The last reading of a studio
+
+`URL:3000/view?now=1&studio=SEA`
+
+Want more? It's very easy to add. Just take a look at studio-sensors/server.js for tips on how to make it better.
 
 ===============================================
 DEVICE INFO
