@@ -41,9 +41,9 @@ temperature: Celsius
 light: light frequency in values from 100-2000 with the relative color temperature of the light sensor
 brightness: not being used right now
 
-The arduino just logs its data using a URL like:
+The raspberry pi just logs its data using a URL like:
 
-http://162.242.237.33:3000/?i=1&l=343&s=232&t=22&h=33&m=0
+http://OUR_URL:3000/?i=1&l=343&s=232&t=22&h=33&m=0&&studio=sea&zone=1
 
 we're trying to keep the URL as short and simple as possible so that we can save space on the Arduino because it hardly has any memory.
 
