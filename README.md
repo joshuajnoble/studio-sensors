@@ -16,16 +16,16 @@ The frog studio sensors log all their data up there to my server every 15 second
 
 Ok, so we have a few things in there:
 
-sensor_id: what sensor is it?
-studio: what studio is it in?
-zone: what part of the studio is it in?
-time: that's a timestamp (ignore the Z, it just means it's using the current timezone, which, yeah, it is)
-sound: scale from 50 - 400 (afaict)
-movement: has anything moved in that zone in the last 30 seconds?
-humidity: what's the relative humidity (percent)
-temperature: Celsius
-light: light frequency in values from 100-2000 with the relative color temperature of the light sensor
-brightness: not being used right now
+* sensor_id: what sensor is it?
+* studio: what studio is it in?
+* zone: what part of the studio is it in?
+* time: that's a timestamp (ignore the Z, it just means it's using the current timezone, which, yeah, it is)
+* sound: scale from 50 - 400 (afaict)
+* movement: has anything moved in that zone in the last 30 seconds?
+* humidity: what's the relative humidity (percent)
+* temperature: Celsius
+* light: light frequency in values from 100-2000 with the relative color temperature of the light sensor
+* brightness: not being used right now
 
 The raspberry pi just logs its data using a URL like:
 
