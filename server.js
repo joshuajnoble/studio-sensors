@@ -7,7 +7,7 @@ var pg = require('pg')
 //or native libpq bindings
 //var pg = require('pg').native
 
-var conString = "postgres://postgres:godzilla1@localhost:5432/sensordata";
+var conString = "postgres://postgres:godzilla1@localhost:5432/studiosensors";
 
 var mimeTypes = {
     "html": "text/html",
