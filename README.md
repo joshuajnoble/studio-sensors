@@ -53,6 +53,36 @@ SERVER INFO
 
 I have my server set up to use upstart to start up our node application, it's logging to :"/etc/init/studioapi.conf" at the moment so you can see what's going on with it.
 
+I'm using ec2 ubuntu.
+
+To get things set up I just did the following:
+
+`sudo apt-get install postgres node`
+
+then 
+
+`sudo vim /etc/postgresql/9.3/main/postgresql.conf`
+
+uncomment the line that says: `#listen_addresses = 'localhost' `
+then
+`sudo vim /etc/postgresql/9.3/main/pg_hba.conf`
+
+then
+
+`sudo service postgresql start`
+
+then
+
+```
+sudo -i -u postgres
+ubuntu@ip-172-31-30-171:~$ sudo -i -u postgres
+postgres@ip-172-31-30-171:~$ psql
+psql (9.3.5)
+Type "help" for help.
+
+ALTER USER postgres WITH PASSWORD '$password';
+```
+
 ===============================================
 DB INFO
 ===============================================
