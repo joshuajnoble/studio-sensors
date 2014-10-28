@@ -24,6 +24,9 @@ TSL235_pin = 7
 DHT22_pin = 17
 sensor_id = -1
 
+IP = '54.191.189.58'
+PORT = '3000'
+
 def bitstring(n):
     s = bin(n)[2:]
     return '0'*(8-len(s)) + s
@@ -56,7 +59,7 @@ def rebootWlan0():
 	subprocess.Popen(["ifup", "wlan0"],close_fds=True)
 	sleep(20)
 	ip = get_ip_address('wlan0')
-	request = urllib2.Request('http://162.242.237.33:3000/update_ip?id='+sensor_id+'&ip=' + ip)
+	request = urllib2.Request('http://'+IP+':'+PORT+'/update_ip?id='+sensor_id+'&ip=' + ip)
 	# recursively calls itself, could be bad
 	try:
 		response = urllib2.urlopen(request)
@@ -116,7 +119,7 @@ if __name__ == "__main__":
 		ip = get_ip_address('wlan0')
 		
 		while has_id == False:
-			request = urllib2.Request('http://162.242.237.33:3000/get_id?studio='+studio+'&zone='+zone+'&ip='+ip)
+			request = urllib2.Request('http://'+IP+':'+PORT+'/get_id?studio='+studio+'&zone='+zone+'&ip='+ip)
 			try:
 				response = urllib2.urlopen(request)
 				sensor_id = response.read()
@@ -203,7 +206,7 @@ if __name__ == "__main__":
 
 			# we're going to want this to allow us to pull this out of the
 			# config file so it can be set from the desktop I'd think
-			request = urllib2.Request('http://162.242.237.33:3000/?'+send)
+			request = urllib2.Request('http://'+IP+':'+PORT+'/?'+send)
 			try: 
 				response = urllib2.urlopen(request)
 				response.close()
