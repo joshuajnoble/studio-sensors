@@ -29,6 +29,8 @@ The frog studio sensors log all their data up there to my server every 15 second
 Ok, so we have a few things in there:
 
 sensor_id: what sensor is it?
+studio: what studio is it in?
+zone: what part of the studio is it in?
 time: that's a timestamp (ignore the Z, it just means it's using the current timezone, which, yeah, it is)
 sound: scale from 50 - 400 (afaict)
 movement: has anything moved in that zone in the last 30 seconds?
@@ -59,6 +61,8 @@ Creating the DB is pretty simple:
 
 create database sensordata;
 
-create table readings ( id serial, sensor id int not null, time timestamp with time zone not null, light int not null, sound int not null, movement int not null, temp int not null, humidity int not null, brightness int not null);
+create table sensors ( studio varchar(3), zone varchar(10), id integer, constraint uid unique(id), ip varchar(16) );
+
+create table readings ( id serial, sensor id int not null, time timestamp with time zone not null, light int not null, sound int not null, movement int not null, temp int not null, humidity int not null, brightness int not null, zone varchar(30) not null, studio varchar(30) not null);
 
 
