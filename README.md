@@ -44,6 +44,24 @@ we're trying to keep the URL as short and simple as possible so that we can save
 Everything is in git but at present or until someone can figure out how the local server stuff is supposed to work, this badboy is staying simple and living on my server.
 
 ===============================================
+DEVICE INFO
+===============================================
+
+The device is a Raspberry pi with some sensors on it. The first thing the device does is start up, report its IP, studio (within frog), location (zone), and then get a sensor id that will follow it as long as it (it, in this case being the SD card) exists.
+
+This is accessed like so:
+
+`$URL/get_id?studio=SEA&zone=1&ip=172.189.128.112`
+
+When the machine is kicked off the network and hops back on that it updates its IP. This is done like so:
+
+`$URL/update_id?id=1&ip=172.189.128.112`
+
+The id you see there is the same ID that is retrieved when the machine is first started up. 
+
+Why is this "id => IP" mapping important? Well, so that you can always SSH into your device and see what's up with it, if it crashed, if the DHT22 burnt out, etc. That's what makes it worthwhile to have everything on the RPI.
+
+===============================================
 SERVER INFO
 ===============================================
 
