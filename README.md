@@ -188,11 +188,11 @@ DB INFO
 ===============================================
 
 Creating the DB is pretty simple:
-
+```
 create database sensordata;
 
 create table sensors ( studio varchar(3), zone varchar(10), id integer, constraint uid unique(id), ip varchar(16) );
 
 create table readings ( id serial, sensor id int not null, time timestamp with time zone not null, light int not null, sound int not null, movement int not null, temp int not null, humidity int not null, brightness int not null, zone varchar(30) not null, studio varchar(30) not null);
-
+```
 
