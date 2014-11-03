@@ -196,3 +196,19 @@ create table sensors ( studio varchar(3), zone varchar(10), id integer, constrai
 create table readings ( id serial, sensor id int not null, time timestamp with time zone not null, light int not null, sound int not null, movement int not null, temp int not null, humidity int not null, brightness int not null, zone varchar(30) not null, studio varchar(30) not null);
 ```
 
+===============================================
+Troubleshooting
+===============================================
+
+Can't get the Pi online?
+
+Try making a little entry in crontab to make the RaspberryPi ping your router every minute. This will ensure that your wifi connection will stay alive. To edit crontab just type (from pi user, you don’t need to be root):
+
+`crontab -e`
+
+and insert this line at the end:
+
+`*/1 * * * * ping -c 1 192.168.0.1`
+
+where 192.168.0.1 is the IP of your router. I don't know what your studios router address will be, so you'll have to figure that out.
+
