@@ -97,6 +97,14 @@ The id you see there is the same ID that is retrieved when the machine is first 
 
 Why is this "id => IP" mapping important? Well, so that you can always SSH into your device and see what's up with it, if it crashed, if the DHT22 burnt out, etc. That's what makes it worthwhile to have everything on the RPI.
 
+To configure the device to run the studio sensor program you need to do a few different things first.
+
+1) Install the drivers for the Edimax EW-7811Un USB WiFi chip
+
+2) Install pigpio
+
+3) Install Adafruit DHT22 driver
+
 ===============================================
 SERVER INFO
 ===============================================
