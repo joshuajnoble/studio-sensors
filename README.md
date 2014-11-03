@@ -1,7 +1,6 @@
-
+===============================================
 frog studio sensor
-
-================================================================================
+===============================================
 
 Let's keep it simple at first: there's a server and you can pull info from it. Here's what some of that info looks like:
 
@@ -101,9 +100,20 @@ To configure the device to run the studio sensor program you need to do a few di
 
 1) Install the drivers for the Edimax EW-7811Un USB WiFi chip
 
+http://www.andreagrandi.it/2014/09/02/how-to-configure-edimax-ew-7811un-wifi-dongle-on-raspbian/
+
 2) Install pigpio
 
-3) Install Adafruit DHT22 driver
+http://abyz.co.uk/rpi/pigpio/
+
+3) Install git
+
+sudo apt-get install git
+
+4) Install Adafruit DHT22 driver
+
+https://github.com/adafruit/Adafruit_Python_DHT
+
 
 ===============================================
 SERVER INFO
