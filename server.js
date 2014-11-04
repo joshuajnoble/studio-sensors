@@ -262,15 +262,21 @@ function handler (req, res) {
               res.write(id.toString()); // everybody gets a new ID
             }
             //now actually write the record
-            var updateQuery = "INSERT INTO sensors(id, studio, zone, ip, key) VALUES ( "+parseInt(id+1, 10)+",'"+q.studio+"','"+q.zone+"','"+q.ip+"', '"+q.studio+q.zone+"');";
-            client.query(updateQuery, function( err2, result2 )
+            var insertQuery = "INSERT INTO sensors(id, studio, zone, ip, key) VALUES ( "+parseInt(id+1, 10)+",'"+q.studio+"','"+q.zone+"','"+q.ip+"', '"+q.studio+q.zone+"');";
+            client.query(insertQuery, function( err2, result2 )
             {
                if(err2)
                {
-                  console.log(" error on update query " + err2 );
-                  res.writeHead(409, {'Content-Type': 'text/plain'});
-                  res.write(" DB error on updateQuery ");
-                  return res.end();
+		  var updateQuery = "UPDATE sensors SET id='"+parseInt(id+1, 10)+"', ip='"+q.ip+"' where key='"+ (q.studio+q.zone) +"';";
+ 		  
+		  client.query( updateQuery, function( errUpdate, result3 ) {
+			if( errUpdate ) { console.log(" error on updating IP "); }
+		  });
+				
+                  //console.log(" error on insert query " + err2 );
+                  //res.writeHead(409, {'Content-Type': 'text/plain'});
+                  //res.write(" DB error on updateQuery ");
+                  //return res.end();
                }
                if( result2 )
                {
