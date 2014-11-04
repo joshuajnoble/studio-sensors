@@ -193,6 +193,10 @@ create database sensordata;
 
 create table sensors ( studio varchar(3), zone varchar(10), id integer, constraint uid unique(id), ip varchar(16) );
 
+ALTER TABLE sensors ADD COLUMN key varchar(30);
+
+ALTER TABLE sensors ADD CONSTRAINT uniquekey UNIQUE (key);
+
 create table readings ( id serial, sensor id int not null, time timestamp with time zone not null, light int not null, sound int not null, movement int not null, temp int not null, humidity int not null, brightness int not null, zone varchar(30) not null, studio varchar(30) not null);
 ```
 
