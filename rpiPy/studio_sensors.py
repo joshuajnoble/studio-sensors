@@ -24,8 +24,8 @@ TSL235_pin = 7
 DHT22_pin = 17
 sensor_id = -1
 
-IP = '54.191.189.58'
-PORT = '3000'
+IP = "54.191.189.58"
+PORT = "3000"
 
 def bitstring(n):
     s = bin(n)[2:]
@@ -115,11 +115,14 @@ if __name__ == "__main__":
 	# if you have an ID file then you don't need to do this
 
 	if os.path.isfile('studio_sensor_id') == False:
-
-		ip = get_ip_address('wlan0')
-		
+		print(" no ID, getting one from server ")
+		ip = get_ip_address("wlan0")
+		print(" my IP is " + str(ip))
 		while has_id == False:
-			request = urllib2.Request('http://'+IP+':'+PORT+'/get_id?studio='+studio+'&zone='+zone+'&ip='+ip)
+			print( " going to request from " + IP + ":" + PORT)
+			request = urllib2.Request("http://"+str(IP)+":"+str(PORT)+"/get_id?studio="+str(studio)+"&zone="+str(zone)+"&ip="+str(ip))
+			#request = urllib2.Request("http://54.191.189.58:3000/get_id?studio=SEA&zone=1&ip=127.0.0.1")
+
 			try:
 				response = urllib2.urlopen(request)
 				sensor_id = response.read()
