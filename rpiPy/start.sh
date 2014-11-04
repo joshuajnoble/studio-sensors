@@ -5,4 +5,4 @@ sudo pigpiod
 STUDIO=SEA
 ZONE=0
 
-python studio_sensors.py -s $STUDIO -z $ZONE > studio_sensors_log&
+sudo python studio_sensors.py -s $STUDIO -z $ZONE > studio_sensors_log&
