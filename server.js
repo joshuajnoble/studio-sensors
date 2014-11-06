@@ -49,13 +49,12 @@ function handler (req, res) {
   
   if(uri == '/') 
   {
-	console.log(" I WORK ");
       var q = querystring.parse(url.parse(req.url).query);
       if(q && q.i)
       {
         console.log(q);
-	var studioStr = "'" + String(q.studio) + "'";
-	var zoneStr = "'" + String(q.zone) + "'";
+	      var studioStr = "'" + String(q.studio) + "'";
+	      var zoneStr = "'" + String(q.zone) + "'";
         var query = "INSERT INTO readings (sensor_id, studio, zone, time, light, sound, temp, movement, humidity, brightness) VALUES (" + 
           parseInt(q.i,10) + ","  + studioStr + "," + zoneStr + ",current_timestamp," + parseInt(q.l,10) + "," + parseInt(q.s,10) + "," + parseInt(q.t,10) + "," + 
           parseInt(q.m,10) + "," + parseInt(q.h,10) +",0);";
