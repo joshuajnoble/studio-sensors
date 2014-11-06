@@ -7,7 +7,7 @@ var pg = require('pg')
 //or native libpq bindings
 //var pg = require('pg').native
 
-var conString = "postgres://postgres:godzilla1@localhost:5432/sensordata";
+var conString = "postgres://postgres:godzilla1@localhost:5432/studiosensors";
 
 var mimeTypes = {
     "html": "text/html",
@@ -23,15 +23,6 @@ client.connect(function(err) {
     return console.error('could not connect to postgres', err);
   }
   else {
-    var q = "set session time zone '-07';";
-    client.query(q,  function(err, result) {
-        if(err){
-          console.log(" error " + err);
-        }
-        if(result) {
-          console.log("timezone set ");
-        }
-      });
   }
 });
 
@@ -40,12 +31,10 @@ app.listen(3000);
 function handler (req, res) {
 
   req.on('error', function (err) {
-    console.log(" this is stupid ");
+    console.log(" error? ");
   });
 
   var uri = url.parse(req.url).pathname;
-  
-  console.log(uri);
   
   if(uri == '/') 
   {
@@ -99,9 +88,27 @@ function handler (req, res) {
           }
         });
       }
-      if(q && q.zone && !q.last) 
+      if(q && q.begintime && q.endtime && q.studio && q.zone) 
       {
-        var query = "select * from readings where zone = "+q.zone;
+        var query = "select * from readings where time BETWEEN to_timestamp('"+q.begindate+ " " + q.begintime +
+          "', 'DDMMYYYY HH24MI') AND to_timestamp('"+q.enddate+" " +q.endtime + "', 'DDMMYYYY HH24MI') and studio = " + q.studio + " and zone = " + q.zone;
+        client.query(query,  function(err, result) {
+          if(err){
+            console.log(" error " + err);
+            res.writeHead(409, {'Content-Type': 'text/plain'});
+            res.write(" error " + err);
+            return res.end();
+          }
+          if(result) {
+            var json = JSON.stringify(result.rows);
+            res.writeHead(200, {'content-type':'application/json', 'content-length':json.length}); 
+            res.end(json); 
+          }
+        });
+      }
+      if(q && q.zone && q.studio && !q.last) 
+      {
+        var query = "select * from readings where zone = "+q.zone + " and studio = " + q.studio;
         client.query(query,  function(err, result) {
           if(err){
             console.log(" error " + err);
@@ -116,9 +123,9 @@ function handler (req, res) {
           }
         });
       }
-      if(q && q.zone && q.last) 
+      if(q && q.zone && q.studio && q.last) 
       {
-        var query = "select * from readings where zone = " + q.zone + " order by time desc limit 1";
+        var query = "select * from readings where zone = " + q.zone + " and studio = " + q.studio + " order by time desc limit 1";
         client.query(query,  function(err, result) {
           if(err){
             console.log(" error " + err);
@@ -150,9 +157,9 @@ function handler (req, res) {
           }
         });
       }
-      if(q && q.recent)
+      if(q && q.recent && q.zone && q.studio)
       {
-          var query = "select * from readings where zone = " + q.recent + " and time > (now() - interval '1 hour');"
+          var query = "select * from readings where zone = " + q.zone + "and studio = " + q.studio + " and time > (now() - interval '1 hour');"
           client.query(query,  function(err, result) {
           if(err){
             console.log(" error " + err);
@@ -186,9 +193,9 @@ function handler (req, res) {
           }
         });
       }
-      else if(q && q.now)
+      else if(q && q.now && q.studio)
       {
-          var query = "select * from readings where zone = " + q.now + " and time > (now() - interval '2 minute');"
+          var query = "select * from readings where studio = " + q.studio + " and time > (now() - interval '10 minute');"
           client.query(query,  function(err, result) {
           if(err){
             console.log(" error " + err);
@@ -203,7 +210,7 @@ function handler (req, res) {
           }
         });
       } 
-      else if(q && q.last)
+      else if(q && q.last && q.zone)
       {
           var query = "SELECT * from readings where zone=" + q.last + " order by time desc limit 1;";
           client.query(query,  function(err, result) {
@@ -223,7 +230,6 @@ function handler (req, res) {
   }
   else if( uri == "/get_id" ) // first thing is to get an ID to use, this lets you know what ID this device is
   {
-
     var q = querystring.parse(url.parse(req.url).query);
     if( q.ip && q.studio && q.zone )
     {
@@ -251,22 +257,30 @@ function handler (req, res) {
             }
             else
             {
+	      console.log( " no results ? " )
               var json = JSON.stringify(id);
               res.write(id.toString()); // everybody gets a new ID
             }
             //now actually write the record
-            var updateQuery = "INSERT INTO sensors(id, studio, zone, ip) VALUES ( "+parseInt(id+1, 10)+",'"+q.studio+"','"+q.zone+"','"+q.ip+"');";
-            client.query(updateQuery, function( err2, result2 )
+            var insertQuery = "INSERT INTO sensors(id, studio, zone, ip, key) VALUES ( "+parseInt(id+1, 10)+",'"+q.studio+"','"+q.zone+"','"+q.ip+"', '"+q.studio+q.zone+"');";
+            client.query(insertQuery, function( err2, result2 )
             {
                if(err2)
                {
-                  console.log(" error on update query " + err2 );
-                  res.writeHead(409, {'Content-Type': 'text/plain'});
-                  res.write(" DB error on updateQuery ");
-                  return res.end();
+		  var updateQuery = "UPDATE sensors SET id='"+parseInt(id+1, 10)+"', ip='"+q.ip+"' where key='"+ (q.studio+q.zone) +"';";
+ 		  
+		  client.query( updateQuery, function( errUpdate, result3 ) {
+			if( errUpdate ) { console.log(" error on updating IP "); }
+		  });
+				
+                  //console.log(" error on insert query " + err2 );
+                  //res.writeHead(409, {'Content-Type': 'text/plain'});
+                  //res.write(" DB error on updateQuery ");
+                  //return res.end();
                }
                if( result2 )
                {
+		  console.log(" made a new ID with ID = " + String(id+1));
                   return;
                }
              });
