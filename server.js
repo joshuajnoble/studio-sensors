@@ -23,14 +23,6 @@ client.connect(function(err) {
     return console.error('could not connect to postgres', err);
   }
   else {
-    var q = "set session time zone '-07';";
-    client.query(q,  function(err, result) {
-        if(err){
-          console.log(" error " + err);
-        }
-        if(result) {
-        }
-      });
   }
 });
 
@@ -238,7 +230,6 @@ function handler (req, res) {
   }
   else if( uri == "/get_id" ) // first thing is to get an ID to use, this lets you know what ID this device is
   {
-
     var q = querystring.parse(url.parse(req.url).query);
     if( q.ip && q.studio && q.zone )
     {
@@ -266,22 +257,30 @@ function handler (req, res) {
             }
             else
             {
+	      console.log( " no results ? " )
               var json = JSON.stringify(id);
               res.write(id.toString()); // everybody gets a new ID
             }
             //now actually write the record
-            var updateQuery = "INSERT INTO sensors(id, studio, zone, ip) VALUES ( "+parseInt(id+1, 10)+",'"+q.studio+"','"+q.zone+"','"+q.ip+"');";
-            client.query(updateQuery, function( err2, result2 )
+            var insertQuery = "INSERT INTO sensors(id, studio, zone, ip, key) VALUES ( "+parseInt(id+1, 10)+",'"+q.studio+"','"+q.zone+"','"+q.ip+"', '"+q.studio+q.zone+"');";
+            client.query(insertQuery, function( err2, result2 )
             {
                if(err2)
                {
-                  console.log(" error on update query " + err2 );
-                  res.writeHead(409, {'Content-Type': 'text/plain'});
-                  res.write(" DB error on updateQuery ");
-                  return res.end();
+		  var updateQuery = "UPDATE sensors SET id='"+parseInt(id+1, 10)+"', ip='"+q.ip+"' where key='"+ (q.studio+q.zone) +"';";
+ 		  
+		  client.query( updateQuery, function( errUpdate, result3 ) {
+			if( errUpdate ) { console.log(" error on updating IP "); }
+		  });
+				
+                  //console.log(" error on insert query " + err2 );
+                  //res.writeHead(409, {'Content-Type': 'text/plain'});
+                  //res.write(" DB error on updateQuery ");
+                  //return res.end();
                }
                if( result2 )
                {
+		  console.log(" made a new ID with ID = " + String(id+1));
                   return;
                }
              });
