@@ -18,12 +18,12 @@ Ok, so we have a few things in there:
 * sensor_id: what sensor is it?
 * studio: what studio is it in?
 * zone: what part of the studio is it in?
-* time: that's a timestamp (ignore the Z, it just means it's using the current timezone, which, yeah, it is)
-* sound: scale from 50 - 400 (afaict)
+* time: that's a timestamp (this is in GMT)
+* sound: scale from 0-30 (afaict)
 * movement: has anything moved in that zone in the last 30 seconds?
 * humidity: what's the relative humidity (percent)
 * temperature: Celsius
-* light: light frequency in values from 100-2000 with the relative color temperature of the light sensor
+* light: light frequency in values from 480-600 (afaict)
 * brightness: not being used right now
 
 The raspberry pi just logs its data using a URL like:
