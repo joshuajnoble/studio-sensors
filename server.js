@@ -91,7 +91,7 @@ function handler (req, res) {
       if(q && q.begintime && q.endtime && q.studio && q.zone) 
       {
         var query = "select * from readings where time BETWEEN to_timestamp('"+q.begindate+ " " + q.begintime +
-          "', 'DDMMYYYY HH24MI') AND to_timestamp('"+q.enddate+" " +q.endtime + "', 'DDMMYYYY HH24MI') and studio = " + q.studio + " and zone = " + q.zone;
+          "', 'DDMMYYYY HH24MI') AND to_timestamp('"+q.enddate+" " +q.endtime + "', 'DDMMYYYY HH24MI') and studio = '" + q.studio + "' and zone = '" + q.zone.toString() + "'";
         client.query(query,  function(err, result) {
           if(err){
             console.log(" error " + err);
@@ -108,7 +108,7 @@ function handler (req, res) {
       }
       if(q && q.zone && q.studio && !q.last) 
       {
-        var query = "select * from readings where zone = "+q.zone + " and studio = " + q.studio;
+        var query = "select * from readings where zone = '"+q.zone + "' and studio = '" + q.studio + "'";
         client.query(query,  function(err, result) {
           if(err){
             console.log(" error " + err);
@@ -125,7 +125,7 @@ function handler (req, res) {
       }
       if(q && q.zone && q.studio && q.last) 
       {
-        var query = "select * from readings where zone = " + q.zone + " and studio = " + q.studio + " order by time desc limit 1";
+        var query = "select * from readings where zone = '" + q.zone + "' and studio = '" + q.studio + "' order by time desc limit 1";
         client.query(query,  function(err, result) {
           if(err){
             console.log(" error " + err);
