@@ -45,20 +45,27 @@ def readADC(adc_channel=0, spi_channel=0):
 	return int(reply, 2)
 
 def get_ip_address(ifname):
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    return socket.inet_ntoa(fcntl.ioctl(
-        s.fileno(),
-        0x8915,  # SIOCGIFADDR
-        struct.pack('256s', ifname[:15])
-    )[20:24])
+	s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+	return socket.inet_ntoa( fcntl.ioctl( s.fileno(), 0x8915, struct.pack('256s', ifname[:15]) )[20:24] )
 
-
-def rebootWlan0():
+def downUp():
 	subprocess.Popen(["ifdown", "wlan0"],close_fds=True)
 	sleep(10)
 	subprocess.Popen(["ifup", "wlan0"],close_fds=True)
 	sleep(20)
-	ip = get_ip_address('wlan0')
+
+
+def rebootWlan0():
+	downUp()
+	hasIP = False
+	while(hasIP == False):
+		try:
+			ip = get_ip_address("wlan0")
+			hasIP = True
+		except IOError:
+			downUp()
+
+
 	request = urllib2.Request('http://'+IP+':'+PORT+'/update_ip?id='+sensor_id+'&ip=' + ip)
 	# recursively calls itself, could be bad
 	try:
