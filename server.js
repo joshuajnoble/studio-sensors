@@ -228,6 +228,26 @@ function handler (req, res) {
         });
       }
   }
+  // set the MAC => studio+zone
+  else if( uri == "/set_studio_zone" ) // map MAC address to studio+zone
+  {
+    var q = querystring.parse(url.parse(req.url).query);
+    
+    if( q.mac )
+    {
+
+    }
+  } 
+  // get the MAC => studio+zone
+  else if( uri == "/get_studio_zone" ) // map MAC address to studio+zone
+  {
+    var q = querystring.parse(url.parse(req.url).query);
+    
+    if( q.mac )
+    {
+
+    }
+  } 
   else if( uri == "/get_id" ) // first thing is to get an ID to use, this lets you know what ID this device is
   {
     var q = querystring.parse(url.parse(req.url).query);
