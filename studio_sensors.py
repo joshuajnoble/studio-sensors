@@ -86,27 +86,32 @@ def rebootWlan0():
 		print( " http error " )
 
 
+def getHwAddr(ifname):
+	s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+	info = fcntl.ioctl(s.fileno(), 0x8927,  struct.pack('256s', ifname[:15]))
+	return ''.join(['%02x' % ord(char) for char in info[18:24]])
 
-####################################################################################################
+
+
 # now begin the actual loop
 ####################################################################################################
 
 if __name__ == "__main__":
 
 	# Read command line args
-	myopts, args = getopt.getopt(sys.argv[1:],"s:z:")
+	#myopts, args = getopt.getopt(sys.argv[1:],"s:z:")
  
 	###############################
 	# o == option
 	# a == argument passed to the o
 	###############################
-	for o, a in myopts:
-		if o == '-s':
-			studio=a
-		elif o == '-z':
-			zone=a
-		else:
-			print("Usage: %s -s studio -z zone" % sys.argv[0])
+	#for o, a in myopts:
+	#	if o == '-s':
+	#		studio=a
+	#	elif o == '-z':
+	#		zone=a
+	#	else:
+	#		print("Usage: %s -s studio -z zone" % sys.argv[0])
 
 	print (studio + " " + zone)
 
