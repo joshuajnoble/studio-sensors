@@ -257,8 +257,8 @@ function handler (req, res) {
 	          console.log( " no results ? " )
               res.write("NONE"); // everybody gets a new ID
             }
-        } 
-    });
+         } 
+      });
   } 
   // get the MAC => studio+zone
   else if( uri == "/get_studio_zone" ) // map MAC address to studio+zone
@@ -291,7 +291,7 @@ function handler (req, res) {
               res.write("NONE"); // everybody gets a new ID
             }
         }
-    }
+    });
   } 
   else if( uri == "/get_id" ) // second thing is to get an ID to use, this lets you know what ID this device is
   {
