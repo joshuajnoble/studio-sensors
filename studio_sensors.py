@@ -113,6 +113,54 @@ if __name__ == "__main__":
 	#	else:
 	#		print("Usage: %s -s studio -z zone" % sys.argv[0])
 
+
+	# FIRST
+	# do we know our zone and studio?
+
+	has_studio_zone = True
+
+	if os.path.isfile('studio_sensor_studio_zone') == False:
+		print(" no studio + zone, getting one from server ")
+		mac = get_ip_address("wlan0")
+		print(" my mac is " + str(mac))
+		while has_studio_zone == False:
+			print( " going to request from " + IP + ":" + PORT)
+			request = urllib2.Request("http://"+str(IP)+":"+str(PORT)+"/get_studio_zone?mac="+str(mac))
+			try:
+				response = urllib2.urlopen(request)
+				studio_zone = response.read()
+
+				print(" got studio + zone " + str(studio_zone).split(':')[0] + " " + str(studio_zone).split(':')[1])
+				f = open('studio_sensor_studio_zone', 'w')
+				f.write(str(studio_zone))
+				f.close()
+				response.close()
+				has_studio_zone = True
+
+			except urllib2.HTTPError, e:
+				 print('HTTPError = ' + str(e.code))
+				 downUp();
+			except urllib2.URLError, e:
+				 downUp();
+				 print('URLError = ' + str(e.reason))
+			except urllib2.HTTPException, e:
+				 downUp();
+				 print('HTTPException')
+			except Exception:
+				 import traceback
+				 print('generic exception: ' + traceback.format_exc())
+				
+			sleep(10)
+
+	# we know our zone and studio, lets load it in
+
+	if os.path.isfile('studio_sensor_studio_zone') == True:
+		f = open('studio_sensor_studio_zone', 'r')
+		studio_zone = f.read()
+		studio = str(studio_zone).split(":")[0]
+		zone = str(studio_zone).split(":")[1]
+		f.close()    
+
 	print (studio + " " + zone)
 
 	pir_pin = 18
@@ -146,18 +194,12 @@ if __name__ == "__main__":
 				has_id = True
 			except urllib2.HTTPError, e:
 				 print('HTTPError = ' + str(e.code))
-				 subprocess.Popen(["ifdown", "wlan0"],close_fds=True)
-				 sleep(10)
-				 subprocess.Popen(["ifup", "wlan0"],close_fds=True)
+				 downUp();
 			except urllib2.URLError, e:
-				 subprocess.Popen(["ifdown", "wlan0"],close_fds=True)
-				 sleep(10)
-				 subprocess.Popen(["ifup", "wlan0"],close_fds=True)
+				 downUp();
 				 print('URLError = ' + str(e.reason))
 			except urllib2.HTTPException, e:
-				 subprocess.Popen(["ifdown", "wlan0"],close_fds=True)
-				 sleep(10)
-				 subprocess.Popen(["ifup", "wlan0"],close_fds=True)
+				 downUp();
 				 print('HTTPException')
 			except Exception:
 				 import traceback

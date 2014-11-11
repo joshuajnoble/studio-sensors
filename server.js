@@ -35,10 +35,10 @@ function handler (req, res) {
   });
 
   var uri = url.parse(req.url).pathname;
-  
+  var q = querystring.parse(url.parse(req.url).query);
+ 
   if(uri == '/') 
   {
-      var q = querystring.parse(url.parse(req.url).query);
       if(q && q.i)
       {
         console.log(q);
@@ -231,11 +231,33 @@ function handler (req, res) {
   // set the MAC => studio+zone
   else if( uri == "/set_studio_zone" ) // map MAC address to studio+zone
   {
-    var q = querystring.parse(url.parse(req.url).query);
     
-    if( q.mac )
+    if( q.mac && q.studio && q.zone )
     {
-
+       var query = "INSERT INTO studio_zone (mac, zone, studio) VALUES '" +q.mac+ "''" +q.studio+ "''" +q.zone+ "' ;";
+      client.query(query, function( err, result )
+      {
+         if(err)
+         {
+            console.log(" error " + err );
+            res.writeHead(409, {'Content-Type': 'text/plain'});
+            res.write(" DB error ");
+            return res.end();
+         }
+         if( result )
+         {
+            res.writeHead(200, {'Content-Type': 'text/plain'});
+            if( result.rowCount > 0 )
+            {
+              console.log( result.rows[0].studio + " " + result.rows[0].zone );
+              res.write( result.rows[0].studio + " " + result.rows[0].zone ); // everybody gets a new ID
+            }
+            else
+            {
+	          console.log( " no results ? " )
+              res.write("NONE"); // everybody gets a new ID
+            }
+        } 
     }
   } 
   // get the MAC => studio+zone
@@ -245,10 +267,33 @@ function handler (req, res) {
     
     if( q.mac )
     {
-
+      var query = "SELECT (zone, studio) FROM studio_zone WHERE mac = '" + str(q.mac) + "';";
+      client.query(query, function( err, result )
+      {
+         if(err)
+         {
+            console.log(" error " + err );
+            res.writeHead(409, {'Content-Type': 'text/plain'});
+            res.write(" DB error ");
+            return res.end();
+         }
+         if( result )
+         {
+            res.writeHead(200, {'Content-Type': 'text/plain'});
+            if( result.rowCount > 0 )
+            {
+              console.log( result.rows[0].studio + ":" + result.rows[0].zone );
+              res.write( result.rows[0].studio + ":" + result.rows[0].zone ); // everybody gets a new ID
+            }
+            else
+            {
+	            console.log( " no results ? " )
+              res.write("NONE"); // everybody gets a new ID
+            }
+        }
     }
   } 
-  else if( uri == "/get_id" ) // first thing is to get an ID to use, this lets you know what ID this device is
+  else if( uri == "/get_id" ) // second thing is to get an ID to use, this lets you know what ID this device is
   {
     var q = querystring.parse(url.parse(req.url).query);
     if( q.ip && q.studio && q.zone )
@@ -277,7 +322,7 @@ function handler (req, res) {
             }
             else
             {
-	      console.log( " no results ? " )
+	            console.log( " no results ? " )
               var json = JSON.stringify(id);
               res.write(id.toString()); // everybody gets a new ID
             }
@@ -300,7 +345,7 @@ function handler (req, res) {
                }
                if( result2 )
                {
-		  console.log(" made a new ID with ID = " + String(id+1));
+                  console.log(" made a new ID with ID = " + String(id+1));
                   return;
                }
              });
