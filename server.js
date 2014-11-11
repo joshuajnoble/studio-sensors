@@ -258,7 +258,7 @@ function handler (req, res) {
               res.write("NONE"); // everybody gets a new ID
             }
         } 
-    }
+    });
   } 
   // get the MAC => studio+zone
   else if( uri == "/get_studio_zone" ) // map MAC address to studio+zone
