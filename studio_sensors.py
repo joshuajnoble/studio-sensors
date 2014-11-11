@@ -117,14 +117,14 @@ if __name__ == "__main__":
 	# FIRST
 	# do we know our zone and studio?
 
-	has_studio_zone = True
+	has_studio_zone = False
 
 	if os.path.isfile('studio_sensor_studio_zone') == False:
 		print(" no studio + zone, getting one from server ")
-		mac = get_ip_address("wlan0")
+		mac = getHwAddr("wlan0")
 		print(" my mac is " + str(mac))
 		while has_studio_zone == False:
-			print( " going to request from " + IP + ":" + PORT)
+			print( " going to mac request from " + IP + ":" + PORT)
 			request = urllib2.Request("http://"+str(IP)+":"+str(PORT)+"/get_studio_zone?mac="+str(mac))
 			try:
 				response = urllib2.urlopen(request)
