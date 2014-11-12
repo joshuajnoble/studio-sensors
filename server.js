@@ -234,7 +234,7 @@ function handler (req, res) {
     
     if( q.mac && q.studio && q.zone )
     {
-       var query = "INSERT INTO studio_zone (mac, zone, studio) VALUES '" +q.mac+ "''" +q.studio+ "''" +q.zone+ "' ;";
+       var query = "INSERT INTO studio_zone (mac, studio, zone) VALUES ('" +q.mac+ "','" +q.studio+ "','" +q.zone+ "') ;";
       client.query(query, function( err, result )
       {
          if(err)
@@ -247,18 +247,12 @@ function handler (req, res) {
          if( result )
          {
             res.writeHead(200, {'Content-Type': 'text/plain'});
-            if( result.rowCount > 0 )
-            {
-              console.log( result.rows[0].studio + " " + result.rows[0].zone );
-              res.write( result.rows[0].studio + " " + result.rows[0].zone ); // everybody gets a new ID
-            }
-            else
-            {
-	          console.log( " no results ? " )
-              res.write("NONE"); // everybody gets a new ID
-            }
+              console.log(" set mac=>studio, zone" + q.zone.toString() + " " + q.studio.toString() );
+              res.write(" set mac=>studio, zone" + q.zone.toString() + " " + q.studio.toString());
+	    return res.end(); 
          } 
       });
+   }
   } 
   // get the MAC => studio+zone
   else if( uri == "/get_studio_zone" ) // map MAC address to studio+zone
@@ -267,7 +261,7 @@ function handler (req, res) {
     
     if( q.mac )
     {
-      var query = "SELECT (zone, studio) FROM studio_zone WHERE mac = '" + str(q.mac) + "';";
+      var query = "SELECT * FROM studio_zone WHERE mac = '" + q.mac + "';";
       client.query(query, function( err, result )
       {
          if(err)
@@ -287,11 +281,13 @@ function handler (req, res) {
             }
             else
             {
-	            console.log( " no results ? " )
+	      console.log( " no results ? " )
               res.write("NONE"); // everybody gets a new ID
             }
+	    return res.end();
         }
     });
+   }
   } 
   else if( uri == "/get_id" ) // second thing is to get an ID to use, this lets you know what ID this device is
   {
@@ -416,3 +412,9 @@ function handler (req, res) {
     }); //end path.exists
   }
 }
+
+
+
+
+
+
