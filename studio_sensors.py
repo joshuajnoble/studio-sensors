@@ -72,18 +72,18 @@ def rebootWlan0():
 		response = urllib2.urlopen(request)
 	except urllib2.HTTPError, e:
 		#response.close()
-		print('HTTPError = ' + str(e.code))
+		print(str(datetime.datetime.now()) + 'HTTPError = ' + str(e.code) )
 		rebootWlan0()
 	except urllib2.URLError, e:
 		#response.close()
 		rebootWlan0()
-		print('URLError = ' + str(e.reason))
+		print(str(datetime.datetime.now()) + 'URLError = ' + str(e.reason))
 	except Exception:
 		#response.close()
 		import traceback
-		print('generic exception: ' + traceback.format_exc())
+		print(str(datetime.datetime.now()) + 'generic exception: ' + traceback.format_exc())
 		rebootWlan0()
-		print( " http error " )
+		print(str(datetime.datetime.now()) +  " http error " )
 
 
 def getHwAddr(ifname):
@@ -111,7 +111,7 @@ if __name__ == "__main__":
 	#	elif o == '-z':
 	#		zone=a
 	#	else:
-	#		print("Usage: %s -s studio -z zone" % sys.argv[0])
+	#		print(str(datetime.datetime.now()) + "Usage: %s -s studio -z zone" % sys.argv[0])
 
 
 	# FIRST
@@ -120,17 +120,17 @@ if __name__ == "__main__":
 	has_studio_zone = False
 
 	if os.path.isfile('studio_sensor_studio_zone') == False:
-		print(" no studio + zone, getting one from server ")
+		print(str(datetime.datetime.now()) + " no studio + zone, getting one from server ")
 		mac = getHwAddr("wlan0")
-		print(" my mac is " + str(mac))
+		print(str(datetime.datetime.now()) + " my mac is " + str(mac))
 		while has_studio_zone == False:
-			print( " going to mac request from " + IP + ":" + PORT)
+			print(str(datetime.datetime.now()) +  " going to mac request from " + IP + ":" + PORT)
 			request = urllib2.Request("http://"+str(IP)+":"+str(PORT)+"/get_studio_zone?mac="+str(mac))
 			try:
 				response = urllib2.urlopen(request)
 				studio_zone = response.read()
 
-				print(" got studio + zone " + str(studio_zone).split(':')[0] + " " + str(studio_zone).split(':')[1])
+				print(str(datetime.datetime.now()) + " got studio + zone " + str(studio_zone).split(':')[0] + " " + str(studio_zone).split(':')[1])
 				f = open('studio_sensor_studio_zone', 'w')
 				f.write(str(studio_zone))
 				f.close()
@@ -138,17 +138,17 @@ if __name__ == "__main__":
 				has_studio_zone = True
 
 			except urllib2.HTTPError, e:
-				 print('HTTPError = ' + str(e.code))
+				 print(str(datetime.datetime.now()) + 'HTTPError = ' + str(e.code))
 				 downUp();
 			except urllib2.URLError, e:
 				 downUp();
-				 print('URLError = ' + str(e.reason))
+				 print(str(datetime.datetime.now()) + 'URLError = ' + str(e.reason))
 			except urllib2.HTTPException, e:
 				 downUp();
-				 print('HTTPException')
+				 print(str(datetime.datetime.now()) + 'HTTPException')
 			except Exception:
 				 import traceback
-				 print('generic exception: ' + traceback.format_exc())
+				 print(str(datetime.datetime.now()) + 'generic exception: ' + traceback.format_exc())
 				
 			sleep(10)
 
@@ -175,35 +175,35 @@ if __name__ == "__main__":
 	# if you have an ID file then you don't need to do this
 
 	if os.path.isfile('studio_sensor_id') == False:
-		print(" no ID, getting one from server ")
+		print(str(datetime.datetime.now()) + " no ID, getting one from server ")
 		ip = get_ip_address("wlan0")
-		print(" my IP is " + str(ip))
+		print(str(datetime.datetime.now()) + " my IP is " + str(ip))
 		while has_id == False:
-			print( " going to request from " + IP + ":" + PORT)
+			print(str(datetime.datetime.now()) +  " going to request from " + IP + ":" + PORT)
 			request = urllib2.Request("http://"+str(IP)+":"+str(PORT)+"/get_id?studio="+str(studio)+"&zone="+str(zone)+"&ip="+str(ip))
 			#request = urllib2.Request("http://54.191.189.58:3000/get_id?studio=SEA&zone=1&ip=127.0.0.1")
 
 			try:
 				response = urllib2.urlopen(request)
 				sensor_id = response.read()
-				print(" got ID " + str(sensor_id))
+				print(str(datetime.datetime.now()) + " got ID " + str(sensor_id))
 				f = open('studio_sensor_id', 'w')
 				f.write(str(sensor_id))
 				f.close()
 				response.close()
 				has_id = True
 			except urllib2.HTTPError, e:
-				 print('HTTPError = ' + str(e.code))
+				 print(str(datetime.datetime.now()) + 'HTTPError = ' + str(e.code))
 				 downUp();
 			except urllib2.URLError, e:
 				 downUp();
-				 print('URLError = ' + str(e.reason))
+				 print(str(datetime.datetime.now()) + 'URLError = ' + str(e.reason))
 			except urllib2.HTTPException, e:
 				 downUp();
-				 print('HTTPException')
+				 print(str(datetime.datetime.now()) + 'HTTPException')
 			except Exception:
 				 import traceback
-				 print('generic exception: ' + traceback.format_exc())
+				 print(str(datetime.datetime.now()) + 'generic exception: ' + traceback.format_exc())
 				
 			sleep(10)
 
@@ -231,7 +231,7 @@ if __name__ == "__main__":
 
 		# every 5 minutes?
 		if (time.time() - last_send) > 300:
-			print( " sending ")
+			print(str(datetime.datetime.now()) +  " sending ")
 			send = "i=" + str(sensor_id) + "&studio="+ studio+ "&zone="+ zone
 			if pir_triggered:
 				send += "&m=1"
@@ -248,7 +248,7 @@ if __name__ == "__main__":
 			# all done with sounds until next send
 			sound_index = 0
 			humidity, temperature = Adafruit_DHT.read_retry(sensor, DHT22_pin)
-			print( str(temperature) + " " + str(humidity))
+			print(str(datetime.datetime.now()) +  str(temperature) + " " + str(humidity))
 			if temperature != None:
 				send += "&t=" + str(int(temperature))
 			else:
@@ -259,7 +259,7 @@ if __name__ == "__main__":
 			else:
 				send += "&h=0"
 
-			print( send )
+			print(str(datetime.datetime.now()) +  send )
 
 			# we're going to want this to allow us to pull this out of the
 			# config file so it can be set from the desktop I'd think
@@ -269,21 +269,21 @@ if __name__ == "__main__":
 				response.close()
 			except urllib2.HTTPError, e:
 				#response.close()
-				print(" HTTP ERROR = " + str(e.code))
+				print(str(datetime.datetime.now()) + " HTTP ERROR = " + str(e.code))
 				if( e.code == 409 ):
-					print(" We're getting a 409 which means a misconfigured request and resulting DB error ")
+					print(str(datetime.datetime.now()) + " We're getting a 409 which means a misconfigured request and resulting DB error ")
 				else:
 					rebootWlan0()
 			except urllib2.URLError, e:
 				#response.close()
 				rebootWlan0()
-				print('URLError = ' + str(e.reason))
+				print(str(datetime.datetime.now()) + 'URLError = ' + str(e.reason))
 			except Exception:
 				#response.close()
 				import traceback
-				print('generic exception: ' + traceback.format_exc())
+				print(str(datetime.datetime.now()) + 'generic exception: ' + traceback.format_exc())
 				rebootWlan0()
-				print( " http error " )
+				print(str(datetime.datetime.now()) +  " http error " )
 
 			last_send = time.time()
 # end
