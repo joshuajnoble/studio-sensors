@@ -1,1 +1,482 @@
-studio sensors
+
+<!doctype html>
+<!--[if IE 9]><html class="lt-ie10" lang="en" > <![endif]-->
+<html class="no-js" lang="en" data-useragent="Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.2; Trident/6.0)">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>studio sensor </title>
+<meta name="description" content="frog studio sensor project"/>
+<meta name="author" content="joshua noble"/>
+<link rel="stylesheet" href="foundation.css"/>
+<script src="../assets/js/modernizr.js"></script>
+</head>
+<body>
+ 
+<div class="row">
+<div class="large-12 columns">
+<div class="nav-bar right">
+<ul class="button-group">
+<li><a href="#assembly" class="button">Assembly</a></li>
+<li><a href="#data" class="button">Getting Data</a></li>
+<li><a href="#database" class="button">Setting up the Database</a></li>
+<li><a href="#troubleshooting" class="button">Troubleshooting the RPi</a></li>
+</ul>
+</div>
+<h1>Studio Sensor</h1>
+<p>All about the frog studio sensor</p>
+<hr/>
+</div>
+</div>
+ 
+ 
+<div class="row">
+ 
+<div class="large-9 columns" role="content">
+<article id="assembly">
+
+<h2>Assembling the Sensor Kit</h2>
+
+<div class="row">
+	<div class="large-6 columns caption">
+	1. This is what you'll be getting.
+	</div>
+	<div class="large-6 columns">
+		<img src="images/IMG_2908.JPG"/>
+	</div>
+</div>
+
+<div class="row">
+	<div class="large-6 columns caption">
+	2. This is what you'll need: solder, a soldering iron, and a way to clean the soldering iron.
+	</div>
+	<div class="large-6 columns">
+		<img src="images/IMG_2909.JPG"/>
+	</div>
+</div>
+
+<div class="row">
+	<div class="large-6 columns caption">
+	3. Place the 13x2 header on *the bottom* of the board
+	</div>
+	<div class="large-6 columns">
+		<img src="images/IMG_2910.JPG"/>
+	</div>
+</div>
+
+<div class="row">
+	<div class="large-6 columns caption">
+	4. Solder the 13x2 header in place
+	</div>
+	<div class="large-6 columns">
+		<img src="images/IMG_2911.JPG"/>
+	</div>
+</div>
+
+<div class="row">
+	<div class="large-6 columns caption">
+	5. Clip female jumpers like so, you'll need jumpers with 2, 4, and 5 places.
+	</div>
+	<div class="large-6 columns">
+		<img src="images/IMG_2912.JPG"/>
+	</div>
+</div>
+
+<div class="row">
+	<div class="large-6 columns caption">
+	6. This is what they should look like.
+	</div>
+	<div class="large-6 columns">
+		<img src="images/IMG_2913.JPG"/>
+	</div>
+</div>
+
+<div class="row">
+	<div class="large-6 columns caption">
+	7. You'll also need a male jumper with 3 posts.
+	</div>
+	<div class="large-6 columns">
+		<img src="images/IMG_2914.JPG"/>
+	</div>
+</div>
+
+<div class="row">
+	<div class="large-6 columns caption">
+	8. Place them on the board like so.
+	</div>
+	<div class="large-6 columns">
+		<img src="images/IMG_2915.JPG"/>
+	</div>
+</div>
+
+<div class="row">
+	<div class="large-6 columns caption">
+	9. Here's another view.
+	</div>
+	<div class="large-6 columns">
+		<img src="images/IMG_2916.JPG"/>
+	</div>
+</div>
+
+<div class="row">
+	<div class="large-6 columns caption">
+	10. I use a piece of tape to hold them in place while soldering
+	</div>
+	<div class="large-6 columns">
+		<img src="images/IMG_2917.JPG"/>
+	</div>
+</div>
+
+<div class="row">
+	<div class="large-6 columns caption">
+	11. All soldered up.
+	</div>
+	<div class="large-6 columns">
+		<img src="images/IMG_2918.JPG"/>
+	</div>
+</div>
+
+<div class="row">
+	<div class="large-6 columns caption">
+	12. Now place the 8pin DIP socket
+	</div>
+	<div class="large-6 columns">
+		<img src="images/IMG_2919.JPG"/>
+	</div>
+</div>
+
+<div class="row">
+	<div class="large-6 columns caption">
+	13. Doesn't matter what direction it faces but it's easier you don't have it facing like I do here (it will matter what direction the chip faces).
+	</div>
+	<div class="large-6 columns">
+		<img src="images/IMG_2920.JPG"/>
+	</div>
+</div>
+
+<div class="row">
+	<div class="large-6 columns caption">
+	15. Now place the MCP3002. The little dot faces towards the "S" on the board.
+	</div>
+	<div class="large-6 columns">
+		<img src="images/IMG_2921.JPG"/>
+	</div>
+</div>
+
+<div class="row">
+	<div class="large-6 columns caption">
+	16. Now place the light sensor.
+	</div>
+	<div class="large-6 columns">
+		<img src="images/IMG_2922.JPG"/>
+	</div>
+</div>
+
+<div class="row">
+	<div class="large-6 columns caption">
+	17. Now place the DHT22. Make sure it faces towards the MCP3002
+	</div>
+	<div class="large-6 columns">
+		<img src="images/IMG_2923.JPG"/>
+	</div>
+</div>
+
+<div class="row">
+	<div class="large-6 columns caption">
+	18. Now attach the PIR sensor.
+	</div>
+	<div class="large-6 columns">
+		<img src="images/IMG_2924.JPG"/>
+	</div>
+</div>
+
+<div class="row">
+	<div class="large-6 columns caption">
+	19. Now attach the PIR sensor.
+	</div>
+	<div class="large-6 columns">
+		<img src="images/IMG_2925.JPG"/>
+	</div>
+</div>
+
+<div class="row">
+	<div class="large-6 columns caption">
+		20. Now solder the right angle header onto the sound sensor.
+	</div>
+	<div class="large-6 columns">
+		<img src="images/IMG_2926.JPG"/>
+	</div>
+</div>
+
+<div class="row">
+	<div class="large-6 columns caption">
+		21. Voila!
+	</div>
+	<div class="large-6 columns">
+		<img src="images/IMG_2927.JPG"/>
+	</div>
+</div>
+
+<div class="row">
+	<div class="large-6 columns caption">
+		23. Now attach the mic to the sensor kit.
+	</div>
+	<div class="large-6 columns">
+		<img src="images/IMG_2928.JPG"/>
+	</div>
+</div>
+
+<div class="row">
+	<div class="large-6 columns caption">
+		23. Now attach the mic to the sensor kit.
+	</div>
+	<div class="large-6 columns">
+		<img src="images/IMG_2929.JPG"/>
+	</div>
+</div>
+
+<div class="row">
+	<div class="large-6 columns caption">
+		24. All done.
+	</div>
+	<div class="large-6 columns">
+		<img src="images/IMG_2930.JPG"/>
+	</div>
+</div>
+
+<div class="row">
+	<div class="large-6 columns caption">
+		25. Soft focus.
+	</div>
+	<div class="large-6 columns">
+		<img src="images/IMG_2931.JPG"/>
+	</div>
+</div>
+
+<div class="row">
+	<div class="large-6 columns caption">
+		26. C'est ça.
+	</div>
+	<div class="large-6 columns">
+		<img src="images/IMG_2933.JPG"/>
+	</div>
+</div>
+
+</article>
+
+<hr/>
+
+
+<article id="data">
+<h2>Getting Data</h2>
+
+Where's the visualization? Good question. Have you made one yet? No? Well there's your answer. This is meant to look different to each studio. There are a few basic pattern goes like so:
+
+<p class="code">/view?params</p>
+
+Let's look at some more stuff in here. You're probably going to want to just use the following:
+<br/>
+<strong>Reading by studio and time</strong>
+
+<p class="code">URL:3000/view?studio=SEA&begindate=24032014&begintime=1600&enddate=24032014&endtime=1700</p>
+
+That gives you all the data from Seattle from 24032014:1600 to 24032014:1700 thats DDMMYY:24HR. This will return something that looks like:
+
+<p class="code">[{"id":134,"sensor_id":1,"time":"2014-03-24T23:48:55.442Z","light":1,"sound":114,"movement":1,"temp":18,"humidity":147,"brightness":0},
+{"id":135,"sensor_id":1,"time":"2014-03-24T23:49:20.120Z","light":1347,"sound":562,"movement":0,"temp":34,"humidity":3,"brightness":0}]</p>
+
+Whoa. That's JSON!
+<br/>
+The frog studio sensors log all their data up there to my server every 15 seconds.
+<br/>
+Ok, so we have a few things in there:
+<br/>
+<ul>
+<li><em>sensor_id</em>: what sensor is it?</li>
+<li><em>studio</em>: what studio is it in?</li>
+<li><em>zone</em>: what part of the studio is it in?</li>
+<li><em>time</em>: that's a timestamp (this is in GMT)</li>
+<li><em>sound</em>: scale from 0-30 (afaict)</li>
+<li><em>movement</em>: has anything moved in that zone in the last 30 seconds?</li>
+<li><em>humidity</em>: what's the relative humidity (percent)</li>
+<li><em>temperature</em>: Celsius</li>
+<li><em>light</em>: light frequency in values from 480-600 (afaict)</li>
+<li><em>brightness</em>: not being used right now</li>
+</ul>
+The raspberry pi just logs its data using a URL like:
+
+http://OUR_URL:3000/?i=1&l=343&s=232&t=22&h=33&m=0&&studio=sea&zone=1
+
+You can make fake (test) posts all you want.
+
+There is more though, be warned though, these datasets can get massive and pulling them all is slow
+<br/>
+<strong>All studios by date:</strong>
+
+<p class="code">URL:3000/view?begindate=24032014&begintime=1600&enddate=24032014&endtime=1700</p>
+
+<strong>The last reading by zone</strong>
+
+<p class="code">URL:3000/view?studio=SEA&zone=1&last=1</p>
+
+<strong>All readings by zone</strong>
+
+<p class="code">URL:3000/view?studio=SEA&zone=1</p>
+
+<strong>All readings by sensorid (good for debugging)</strong>
+
+<p class="code">URL:3000/view?id=1</p>
+
+<strong>Timeboxed view of a particular zone:</strong>
+
+<p class="code">URL:3000/?i=1&l=343&s=232&t=22&h=33&m=0&&studio=sea&zone=1</p>
+
+<strong>All readings from the last hour</strong>
+
+<p class="code">URL:3000/view?recent=1&zone=1&studio=SEA</p>
+
+<strong>The last reading of a studio</strong>
+
+<p class="code">URL:3000/view?now=1&studio=SEA</p>
+
+Want more? It's very easy to add. Just take a look at <a href="https://github.com/joshuajnoble/studio-sensors/blob/master/server.js">server.js</a> for tips on how to make it better.
+
+
+</article>
+
+
+
+<hr/>
+<article id="database">
+
+
+<h2>DB INFO</h2>
+
+Creating the DB is pretty simple:
+
+<p class="code">create database sensordata;</p>
+
+<p class="code">create table sensors ( studio varchar(3), zone varchar(10), id integer, constraint uid unique(id), ip varchar(16) );</p>
+
+<p class="code">ALTER TABLE sensors ADD COLUMN key varchar(30);</p>
+
+<p class="code">ALTER TABLE sensors ADD CONSTRAINT uniquekey UNIQUE (key);</p>
+
+<p class="code">create table studio_zone ( studio varchar(3), zone varchar(10), mac varchar(12), constraint umac unique(mac) );</p>
+
+<p class="code">create table readings ( id serial, sensor id int not null, time timestamp with time zone not null, light int not null, sound int not null, movement int not null, temp int not null, humidity int not null, brightness int not null, zone varchar(30) not null, studio varchar(30) not null);</p>
+
+<p> So we wind up with this:
+<br/>
+<p class="code">public | readings    | table | postgres <br/>
+public | sensors     | table | postgres <br/>
+public | studio_zone | table | postgres <br/></p>
+
+</p>
+
+<p> <strong>Readings</strong> All readings (brightness isn't used)
+<p class="code">
+ id         | integer                  | not null default nextval('readings_id_seq'::regclass)<br/>
+ sensor_id  | integer                  | not null<br/>
+ time       | timestamp with time zone | not null<br/>
+ light      | integer                  | not null<br/>
+ sound      | integer                  | not null<br/>
+ movement   | integer                  | not null<br/>
+ temp       | integer                  | not null<br/>
+ humidity   | integer                  | not null<br/>
+ brightness | integer                  | not null<br/>
+ zone       | character varying(30)    | not null<br/>
+ studio     | character varying(30)    | not null<br/>
+<p>
+</p>
+
+<p>
+	<strong>Sensors</strong> Sensor to IP mappings (so you can ssh into the sensors)
+<p class="code">
+ studio | character varying(3)  | <br/>
+ zone   | character varying(10) | <br/>
+ id     | integer               | <br/>
+ ip     | character varying(16) | <br/>
+ key    | character varying(30) | <br/>
+</p>
+
+</p>
+
+<p>
+	<strong>studio_zone</strong> Studio to zone mappings
+<p class="code">
+	studio | character varying(3)  | <br/>
+ zone   | character varying(10) | <br/>
+ mac    | character varying(12) | <br/>
+</p>
+</p>
+
+</article>
+
+<hr/>
+
+<article id="troubleshooting">
+
+<h2>Troubleshooting</h2>
+<p>
+<strong>Can't get the Pi online?</strong>
+<br/>
+Try making a little entry in crontab to make the RaspberryPi ping your router every minute. This will ensure that your wifi connection will stay alive. To edit crontab just type (from pi user, you don’t need to be root):
+
+<p class="code">crontab -e</p>
+
+and insert this line at the end:
+
+<p class="code">*/1 * * * * ping -c 1 192.168.0.1</p>
+
+where 192.168.0.1 is the IP of your router. I don't know what your studios router address will be, so you'll have to figure that out.
+<br/>
+</p>
+<p>
+<strong>PIR Readings weird?</strong>
+<br/>
+Make sure it's facing somewhere that doesn't have a huge amount of fluctuation of light, i.e. pointing at a window or in a room with auto-switching lights. Make sure it's in a place where people are passing by it. 
+
+<br/>
+</p>
+<p>
+<strong>Kitchen</strong>
+<br/>
+Don't put the sensor too close to the sink or dishwasher or your temp/humidity readings will get very strange. 
+</p>
+</article>
+
+</div>
+ 
+<footer class="row">
+<div class="large-12 columns">
+<hr/>
+<div class="row">
+<div class="large-6 columns">
+<p>joshua noble | frog seattle | 2014</p>
+</div>
+</ul>
+</div>
+</div>
+</div>
+</footer>
+<script>
+  document.write('<script src=js/vendor/' +
+  ('__proto__' in {} ? 'zepto' : 'jquery') +
+  '.js><\/script>')
+  </script>
+<script src="../../assets/js/jquery.js"></script>
+<script src="js/foundation.min.js"></script>
+<script>
+    $(document).foundation();
+  </script>
+<script src="../assets/js/templates/jquery.js"></script>
+<script src="../assets/js/templates/foundation.js"></script>
+<script>
+      $(document).foundation();
+
+      var doc = document.documentElement;
+      doc.setAttribute('data-useragent', navigator.userAgent);
+    </script>
+</body>
+</html>
