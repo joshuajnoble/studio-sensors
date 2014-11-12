@@ -129,7 +129,6 @@ if __name__ == "__main__":
 			try:
 				response = urllib2.urlopen(request)
 				studio_zone = response.read()
-
 				print(str(datetime.datetime.now()) + " got studio + zone " + str(studio_zone).split(':')[0] + " " + str(studio_zone).split(':')[1])
 				f = open('studio_sensor_studio_zone', 'w')
 				f.write(str(studio_zone))
@@ -138,7 +137,11 @@ if __name__ == "__main__":
 				has_studio_zone = True
 
 			except urllib2.HTTPError, e:
+				 if(e.code == 409):
+				 	print(str(datetime.datetime.now()) + ' DB error configure MAC ' + str(e.code))
+					sys.exit()
 				 print(str(datetime.datetime.now()) + 'HTTPError = ' + str(e.code))
+				 #print(str(datetime.datetime.now()) + 'HTTPError = ' + str(e.code))
 				 downUp();
 			except urllib2.URLError, e:
 				 downUp();
