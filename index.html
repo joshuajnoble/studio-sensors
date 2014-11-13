@@ -39,18 +39,15 @@
 <h2>I just got my sensor, what do I do?</h2>
 
 <div class="row">
-	<div class="large-6 columns caption">
-	You need to get the MAC address of the Edimax-7811Un that came with your kit. You'll see it next to the thing that says MAC on the USB connection. Got it? Good. Now make a URL that looks like this: <span class="code">http://54.191.189.58:3000/set_studio_zone?mac=801f027e8c20&studio=SEA&zone=0</span> This is important that you get this right and that you do this before you assemble and plug in the sensor.
+	<div class="large-12 columns caption">
+	You need to get the MAC address of the Edimax-7811Un that came with your kit. You'll see it next to the thing that says MAC on the USB connection. 	<a href="images/IMG_2945.JPG"><img src="images/IMG_2945.JPG"/></a>
+    Got it? Good. Now make a URL that looks like this: <p class="code">http://54.191.189.58:3000/set_studio_zone?mac=801f027e8c20&studio=SEA&zone=0</p> This is important that you get this right and that you do this before you assemble and plug in the sensor.
 	<ul>
 		<li><span class="code">mac=801f027e8c20</span> This needs to be the MAC address from your dongle. The sensor will use this to figure out what it is.</li>
 		<li><span class="code">studio=SEA</span> This is your studio. It can only be 3 letters long.</li>
 		<li><span class="code">zone=0</span> This is the zone that the sensor will be installed in. It can be 10 letters long.</li>
 	</ul>
-
-	<strong>Now go to your URL.</strong> If you get a 409 for some reason, that means that you've done something wrong or something has gone horribly wrong on EC2
-	</div>
-	<div class="large-6 columns">
-		<img src="images/IMG_2945.JPG"/>
+	<strong>Now go to your URL.</strong> If you get a 409 for some reason, that means that you've done something wrong or something has gone horribly wrong on EC2. Hopefully neither of those things will happen. This is so that the sensor knows what zone it is to be located in and how to log all of its data.
 	</div>
 </div>
 
