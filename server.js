@@ -389,6 +389,40 @@ function handler (req, res) {
       return res.end();
     }
   }
+
+  else if( uri == "/get_ip" )
+{
+    var q = querystring.parse(url.parse(req.url).query);
+    if( q.studio && q.zone )
+    {
+      //UPDATE films SET kind = 'Dramatic' WHERE kind = 'Drama';
+      var query = "SELECT * FROM sensors WHERE studio  = '" + q.studio + "' AND zone = '" + q.zone + "';";
+      client.query(query, function( err, result )
+      {
+         if(err)
+         {
+            console.log(" error " + err );
+            res.writeHead(409, {'Content-Type': 'text/plain'});
+            res.write(" DB error ");
+            return res.end();
+         }
+         if( result )
+         {
+            res.writeHead(200, {'Content-Type': 'text/plain'});
+            res.write(result.rows[0].ip); // it's okd
+            return res.end();
+         }
+      });
+    }
+    else
+    {
+      res.writeHead(409, {'Content-Type': 'text/plain'});
+      res.write("Needs machine id");
+      return res.end();
+    }
+ 
+}
+
   else
   {
 
