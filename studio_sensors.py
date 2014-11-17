@@ -9,11 +9,11 @@ import sys
 from time import sleep
 import pigpio
 import urllib2
+import httplib
 import Adafruit_DHT
 import datetime
 import os
 import contextlib
-
 import subprocess
 from subprocess import call
 
@@ -116,7 +116,8 @@ if __name__ == "__main__":
 
 	# FIRST
 	# do we know our zone and studio?
-
+	
+	print( str(datetime.datetime.now()) + "start ") 
 	has_studio_zone = False
 
 	if os.path.isfile('studio_sensor_studio_zone') == False:
@@ -135,24 +136,30 @@ if __name__ == "__main__":
 				f.close()
 				response.close()
 				has_studio_zone = True
-
+			except IndexError, e:
+				print( str(datetime.datetime.now()) + " service didn't find this MAC address, add for this device and restart ")
+				sys.exit()
 			except urllib2.HTTPError, e:
-				 if(e.code == 409):
-				 	print(str(datetime.datetime.now()) + ' DB error configure MAC ' + str(e.code))
+				if(e.code == 409):
+					print(str(datetime.datetime.now()) + ' DB error configure MAC ' + str(e.code))
 					sys.exit()
-				 print(str(datetime.datetime.now()) + 'HTTPError = ' + str(e.code))
-				 #print(str(datetime.datetime.now()) + 'HTTPError = ' + str(e.code))
-				 downUp();
+
+ 
+				print(str(datetime.datetime.now()) + 'HTTPError = ' + str(e.code))
+				#print(str(datetime.datetime.now()) + 'HTTPError = ' + str(e.code))
+				downUp()
 			except urllib2.URLError, e:
-				 downUp();
-				 print(str(datetime.datetime.now()) + 'URLError = ' + str(e.reason))
-			except urllib2.HTTPException, e:
-				 downUp();
-				 print(str(datetime.datetime.now()) + 'HTTPException')
+				downUp()
+				print(str(datetime.datetime.now()) + 'URLError = ' + str(e.reason))
+			except httplib.HTTPException, e:
+				if(e.code == 409):
+					print(str(datetime.datetime.now()) + ' DB error configure MAC ' + str(e.code))
+					sys.exit()
+				downUp()
+				print(str(datetime.datetime.now()) + 'HTTPException')
 			except Exception:
-				 import traceback
-				 print(str(datetime.datetime.now()) + 'generic exception: ' + traceback.format_exc())
-				
+				import traceback
+				print(str(datetime.datetime.now()) + 'generic exception: ' + traceback.format_exc())
 			sleep(10)
 
 	# we know our zone and studio, lets load it in
@@ -201,7 +208,7 @@ if __name__ == "__main__":
 			except urllib2.URLError, e:
 				 downUp();
 				 print(str(datetime.datetime.now()) + 'URLError = ' + str(e.reason))
-			except urllib2.HTTPException, e:
+			except httplib.HTTPException, e:
 				 downUp();
 				 print(str(datetime.datetime.now()) + 'HTTPException')
 			except Exception:
