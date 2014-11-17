@@ -276,8 +276,9 @@ function handler (req, res) {
             res.writeHead(200, {'Content-Type': 'text/plain'});
             if( result.rowCount > 0 )
             {
-              console.log( result.rows[0].studio + ":" + result.rows[0].zone );
-              res.write( result.rows[0].studio + ":" + result.rows[0].zone ); // everybody gets a new ID
+		res.writeHead(409, {'Content-Type': 'text/plain'});
+            res.write(" DB error ");
+            return res.end();
             }
             else
             {
