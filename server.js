@@ -234,7 +234,7 @@ function handler (req, res) {
     
     if( q.mac && q.studio && q.zone )
     {
-       var query = "INSERT INTO studio_zone (mac, studio, zone) VALUES ('" +q.mac+ "','" +q.studio+ "','" +q.zone+ "') ;";
+       var query = "INSERT INTO studio_zone (mac, studio, zone) VALUES ('" +q.mac.toLowerCase() + "','" +q.studio+ "','" +q.zone+ "') ;";
       client.query(query, function( err, result )
       {
          if(err)
@@ -261,7 +261,7 @@ function handler (req, res) {
     
     if( q.mac )
     {
-      var query = "SELECT * FROM studio_zone WHERE mac = '" + q.mac + "';";
+      var query = "SELECT * FROM studio_zone WHERE mac = '" + q.mac.toLowerCase() + "';";
       client.query(query, function( err, result )
       {
          if(err)
@@ -273,17 +273,17 @@ function handler (req, res) {
          }
          if( result )
          {
-            res.writeHead(200, {'Content-Type': 'text/plain'});
             if( result.rowCount > 0 )
             {
-		res.writeHead(409, {'Content-Type': 'text/plain'});
-            res.write(" DB error ");
-            return res.end();
+		
+              res.writeHead(200, {'Content-Type': 'text/plain'});
+              console.log( result.rows[0].studio + ":" + result.rows[0].zone );
+              res.write( result.rows[0].studio + ":" + result.rows[0].zone ); // everybody gets a new ID
             }
             else
             {
-	      console.log( " no results ? " )
-              res.write("NONE"); // everybody gets a new ID
+	      res.writeHead(409, {'Content-Type': 'text/plain'});
+              res.write("NONE"); // no studio+zone for this MAC
             }
 	    return res.end();
         }
