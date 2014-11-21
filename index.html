@@ -20,6 +20,8 @@
 <li><a href="#assembly" class="button">Assembly</a></li>
 <li><a href="#data" class="button">Getting Data</a></li>
 <li><a href="#database" class="button">Setting up the Database</a></li>
+<li><a href="#ec2" class="button">EC2</a></li>
+<li><a href="#node" class="button">Node</a></li>
 <li><a href="#troubleshooting" class="button">Troubleshooting the RPi</a></li>
 </ul>
 </div>
@@ -446,6 +448,150 @@ public | studio_zone | table | postgres <br/></p>
  mac    | character varying(12) | <br/>
 </p>
 </p>
+
+</article>
+
+<hr/>
+
+<article id="ec2">
+
+
+<h2>Getting around on our EC2 instance</h2>
+
+This is pretty easy, if I gave you a .pem then you're the boss! EC2 doesn't really care about passwords so sudo away (but don't ruin anything). To log in, do
+
+<p class="code">ssh -i {WHEREVER}/AWS-JOSH.pem ubuntu@ec2-54-191-189-58.us-west-2.compute.amazonaws.com</p>
+
+That gets you in. Once you're in you'll see a really stripped down setup:
+
+<pre class="code">
+ubuntu@ip-172-31-30-171:~$ ls
+index.html  studio-sensors  tmp
+</pre>
+
+That's all that's in there on purpose. studio-sensors is the git repo. It's set up to use HTTP on purpose so that anybody can pull/push to the github repo without needing to mess with key setup.
+
+<br/>
+
+<strong>Upstart</strong>
+
+We run the server on port 3000 using an upstart task. The task itself is super simple
+
+<pre class="code">
+description "node.js server"
+author     "josh"
+
+# used to be: start on startup
+# until we found some mounts weren't ready yet while booting:
+start on started mountall
+stop on shutdown
+
+# Automatically Respawn:
+respawn
+respawn limit 99 5
+
+script
+    # Not sure why $HOME is needed, but we found that it is:
+    export HOME="/ubuntu"
+
+    exec /usr/bin/nodejs /home/ubuntu/studio-sensors/server.js >> /var/log/node.log 2>&1
+end script
+
+post-start script
+   # Optionally put a script here that will notifiy you node has (re)started
+   # /root/bin/hoptoad.sh "node.js has started!"
+end script
+~          
+</pre>
+
+<p>It lives in the git repo but has to live in /etc/init to be recognized as a script. Starting it up: <span class="code">sudo start studioapi</span>. Shutting it up: <span class="code">sudo stop studioapi</span></p>
+
+Feel free to alter it if needed but please keep the git version up to date. Thanks!
+
+<strong>Postgres</strong>
+
+You wanna do some Postgres? Wicked. Here you go:
+
+<pre class="code">
+ubuntu@ip-172-31-30-171:~$ sudo su postgres
+postgres@ip-172-31-30-171:/home/ubuntu$ psql
+psql (9.3.5)
+Type "help" for help.
+
+postgres=# \c studiosensors;
+You are now connected to database "studiosensors" as user "postgres".
+</pre>
+
+Now you're in the database. You can do whatever you want from there, for example, get the last reading:
+
+<pre class="code">
+studiosensors=# select * from readings order by time desc limit 1;
+ id  | sensor_id |             time              | light | sound | movement | temp | humidity | brightness | zone | studio 
+-----+-----------+-------------------------------+-------+-------+----------+------+----------+------------+------+--------
+ 341 |         7 | 2014-11-21 01:26:00.375019+00 |   600 |    10 |        1 |   23 |       35 |          0 | 1    | SEA
+(1 row)
+
+</pre>
+
+or
+
+<pre class="code">
+studiosensors=# select * from sensors;
+ studio | zone | id |      ip      | key  
+--------+------+----+--------------+------
+ SEA    | 0    |  6 | 10.119.73.80 | SEA0
+ SEA    | 1    |  7 | 10.119.73.80 | SEA1
+</pre>
+
+That's really all there is to it.
+
+</article>
+
+<hr/>
+
+<article id="node">
+	<h2>Node</h2>
+	Ok, I know nothing about Node. Not going to lie. There's nothing cool in the server.js. I can lay it all out here really quick
+
+	Connect to the server:
+	<a href="https://github.com/joshuajnoble/studio-sensors/blob/master/server.js#L10"><pre class="code">
+		var conString = "postgres://postgres:godzilla1@localhost:5432/studiosensors";
+	</pre></a>
+
+	Make the app listen on 3000:
+	<a href="https://github.com/joshuajnoble/studio-sensors/blob/master/server.js#L29"><pre class="code">
+		app.listen(3000);
+	</pre></a>
+
+	Handle *all* the routing:
+
+<a href="https://github.com/joshuajnoble/studio-sensors/blob/master/server.js#L31-40"><pre class="code">
+	function handler (req, res) {
+
+	  req.on('error', function (err) {
+	    console.log(" error? ");
+	  });
+
+	  var uri = url.parse(req.url).pathname;
+	  var q = querystring.parse(url.parse(req.url).query);
+	 
+	  if(uri == '/') 
+	  {
+</pre></a>
+
+	Here's what the insert looks like. Yeah, I know, insecure, sql injection, overflows, effed up, all that. Please fix it, thanks :)
+
+<a href="https://github.com/joshuajnoble/studio-sensors/blob/master/server.js#L47-50"><pre class="code">
+ var query = "INSERT INTO readings (sensor_id, studio, zone, time, light, sound, temp, movement, humidity, brightness) " +
+			"VALUES (" + parseInt(q.i,10) + ","  + studioStr + "," + zoneStr + ",current_timestamp," 
+			+ parseInt(q.l,10) + "," + parseInt(q.s,10) + "," + parseInt(q.t,10) + "," + 
+			parseInt(q.m,10) + "," + parseInt(q.h,10) +",0);";
+
+       console.log(query);
+       client.query(query,  function(err, result) {
+</pre></a>
+
+The rest continues on in the same manner, parse routes, parse params, do the postgres query, return 200 on success and 409 on fail. The 409 is important because the Raspberry Pi knows that 409 = mistakes and logs accordingly. You'll see all the routes in that same "if/else if" pattern.
 
 </article>
 
